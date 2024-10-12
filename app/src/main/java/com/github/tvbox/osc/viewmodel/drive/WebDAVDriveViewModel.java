@@ -62,10 +62,9 @@ public class WebDAVDriveViewModel extends AbstractDriveViewModel {
                     }
 
                     List<DriveFolderFile> items = new ArrayList<>();
-                    if (files != null) {
-                        for (DavResource file : files) {
-                            if (targetPath != "" && file.getPath().toUpperCase(Locale.ROOT).endsWith(targetPath.toUpperCase(Locale.ROOT) + "/"))
-                                continue;
+                    if (files != null && files.size() > 1) {
+                        for (int index = 1; index < files.size(); index++) {
+                            DavResource file = files.get(index);
                             int extNameStartIndex = file.getName().lastIndexOf(".");
                             items.add(new DriveFolderFile(currentDriveNote, file.getName(), 0, !file.isDirectory(),
                                     !file.isDirectory() && extNameStartIndex >= 0 && extNameStartIndex < file.getName().length() ?
@@ -74,9 +73,9 @@ public class WebDAVDriveViewModel extends AbstractDriveViewModel {
                         }
                     }
                     sortData(items);
-                    DriveFolderFile backItem = new DriveFolderFile(null, null, 0, false, null, null);
-                    backItem.parentFolder = backItem;
-                    items.add(0, backItem);
+//                    DriveFolderFile backItem = new DriveFolderFile(null, null, 0, false, null, null);
+//                    backItem.parentFolder = backItem;
+//                    items.add(0, backItem);
                     currentDriveNote.setChildren(items);
                     if (callback != null)
                         callback.callback(currentDriveNote.getChildren(), false);
