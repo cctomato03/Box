@@ -1,11 +1,23 @@
 package com.github.tvbox.osc.ui.activity;
 
+import static cc.shinichi.library.glide.ImageLoader.getGlideCacheFile;
+
 import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.Image;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -14,6 +26,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.recyclerview.widget.DiffUtil;
 
 import com.github.tvbox.osc.R;
@@ -53,14 +66,26 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.sql.Driver;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
+import cc.shinichi.library.ImagePreview;
+import cc.shinichi.library.bean.ImageInfo;
+import cc.shinichi.library.glide.ImageLoader;
+import cc.shinichi.library.view.listener.OnBigImageLongClickListener;
+import cc.shinichi.library.view.listener.OnDownloadClickListener;
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
 public class DriveActivity extends BaseActivity {
@@ -256,6 +281,94 @@ public class DriveActivity extends BaseActivity {
                                     });
                                 }
                             });
+                        }
+                    } else if (StorageDriveType.isImageType(selectedItem.fileType) && viewModel.getCurrentDrive().getDriveType() == StorageDriveType.TYPE.WEBDAV) {
+                        List<ImageInfo> imageInfoList = new ArrayList<>();
+                        int imageIndex = 0;
+                        for (DriveFolderFile driveFolderFile : adapter.getData()) {
+                            if (StorageDriveType.isImageType(driveFolderFile.fileType)) {
+                                ImageInfo imageInfo = new ImageInfo();
+
+                                JsonObject config = viewModel.getCurrentDrive().getConfig();
+                                String targetPath = driveFolderFile.getAccessingPathStr() + driveFolderFile.name;
+                                imageInfo.setOriginUrl(config.get("url").getAsString() + targetPath);
+                                imageInfo.setName(driveFolderFile.name);
+
+                                String credentialStr = viewModel.getCurrentDrive().getWebDAVBase64Credential();
+                                if (credentialStr != null) {
+                                    HashMap<String, String> header = new HashMap<>();
+                                    header.put("authorization", "Basic " + credentialStr);
+                                    imageInfo.setHeader(header);
+                                }
+
+                                imageInfoList.add(imageInfo);
+                                if (driveFolderFile == selectedItem) {
+                                    imageIndex = imageInfoList.size() - 1;
+                                }
+                            }
+                        }
+                        if (!imageInfoList.isEmpty()) {
+                            ImagePreview.getInstance()
+                                    .setContext(DriveActivity.this)
+                                    .setIndex(imageIndex)
+                                    .setImageInfoList(imageInfoList)
+                                    .setLoadStrategy(ImagePreview.LoadStrategy.AlwaysOrigin)
+                                    .setLongPicDisplayMode(ImagePreview.LongPicDisplayMode.FillWidth)
+                                    .setFolderName("webdavImage")
+                                    .setZoomTransitionDuration(300)
+                                    .setShowErrorToast(false)
+                                    .setEnableClickClose(false)
+                                    .setBigImageLongClickListener(new OnBigImageLongClickListener() {
+                                        @Override
+                                        public boolean onLongClick(Activity activity, View view, int position) {
+                                            return true;
+                                        }
+                                    })
+                                    .setDownloadClickListener(new OnDownloadClickListener() {
+                                        @Override
+                                        public void onClick(Activity activity, View view, int position) {
+                                            // 可以在此处执行您自己的下载逻辑、埋点统计等信息
+                                            File cacheFile = getGlideCacheFile(DriveActivity.this, imageInfoList.get(position).getOriginUrl());
+                                            if (cacheFile != null && cacheFile.exists()) {
+                                                try {
+                                                    ExifInterface exifInterface = new ExifInterface(new FileInputStream(cacheFile));
+                                                    String downloadLink = exifInterface.getAttribute(androidx.exifinterface.media.ExifInterface.TAG_ARTIST);
+                                                    if (downloadLink != null && !downloadLink.isEmpty()) {
+                                                        AlertDialog dialog = new AlertDialog.Builder(activity)
+                                                                .setTitle("提示")
+                                                                .setMessage("这里将会提取图片中的链接信息")
+                                                                .setPositiveButton("复制", (dialog1, which) -> {
+                                                                    ClipboardManager clipboardManager =
+                                                                            (ClipboardManager)DriveActivity.this.getSystemService(Context.CLIPBOARD_SERVICE);
+                                                                    clipboardManager.setPrimaryClip(ClipData.newPlainText("label", downloadLink));
+                                                                })
+                                                                .setNegativeButton("打开", (dialog1, which) -> {
+                                                                    Intent openIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadLink));
+                                                                    try {
+                                                                        startActivity(openIntent);
+                                                                    } catch (
+                                                                            ActivityNotFoundException e) {
+                                                                        Toast.makeText(DriveActivity.this, "没有找到打开此链接的应用", Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                })
+                                                                .create();
+                                                        dialog.show();
+                                                    }
+                                                } catch (IOException e) {
+                                                    throw new RuntimeException(e);
+                                                }
+                                            } else {
+                                                Toast.makeText(DriveActivity.this, "图片还未下载", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+
+                                        @Override
+                                        public boolean isInterceptDownload() {
+                                            // return true 时, 需要自己实现下载
+                                            // return false 时, 使用内置下载
+                                            return true;
+                                        }
+                                    }).start();
                         }
                     } else {
                         Toast.makeText(DriveActivity.this, "Media Unsupported", Toast.LENGTH_SHORT).show();

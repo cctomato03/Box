@@ -31,7 +31,32 @@ public class StorageDriveType {
         return false;
     }
 
+    public static boolean isImageType(String type) {
+        if(type == null || type.length() == 0)
+            return false;
+        type = type.toUpperCase(Locale.ROOT).trim();
+        for (String imageType : imageTypes) {
+            if(imageType.equals(type))
+                return true;
+        }
+        return false;
+    }
+
+    private static final String[] imageTypes = new String[] {
+            "JPEG",
+            "JPG",
+            "PNG",
+            "BMP",
+            "WEBP",
+            "GIF",
+    };
+
     private static final String[] videoTypes = new String[] {
+            "AAC",
+            "MP3",
+            "M4A",
+            "FLAC",
+            "WAV",
             "264",
             "264",
             "3G2",
