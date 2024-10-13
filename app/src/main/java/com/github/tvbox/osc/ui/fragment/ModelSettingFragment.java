@@ -20,6 +20,7 @@ import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.player.thirdparty.Kodi;
 import com.github.tvbox.osc.player.thirdparty.MXPlayer;
 import com.github.tvbox.osc.player.thirdparty.ReexPlayer;
+import com.github.tvbox.osc.ui.activity.DriveActivity;
 import com.github.tvbox.osc.ui.activity.SettingActivity;
 import com.github.tvbox.osc.ui.adapter.ApiHistoryDialogAdapter;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
@@ -52,6 +53,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import cc.shinichi.library.glide.ImageLoader;
+import cc.shinichi.library.tool.ui.ToastUtil;
 import me.jessyan.autosize.utils.AutoSizeUtils;
 import okhttp3.HttpUrl;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
@@ -797,8 +800,10 @@ public class ModelSettingFragment extends BaseLazyFragment {
             @Override
             public void onClick(View v) {
                 FastClickCheckUtil.check(v);
-                AboutDialog dialog = new AboutDialog(mActivity);
-                dialog.show();
+                ImageLoader.cleanDiskCache(mActivity);
+                ToastUtil.getInstance().showShort(mActivity, "磁盘缓存已成功清除");
+//                AboutDialog dialog = new AboutDialog(mActivity);
+//                dialog.show();
             }
         });
 

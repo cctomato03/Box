@@ -313,7 +313,7 @@ public class DriveActivity extends BaseActivity {
                                     .setIndex(imageIndex)
                                     .setImageInfoList(imageInfoList)
                                     .setLoadStrategy(ImagePreview.LoadStrategy.AlwaysOrigin)
-                                    .setLongPicDisplayMode(ImagePreview.LongPicDisplayMode.FillWidth)
+                                    .setLongPicDisplayMode(ImagePreview.LongPicDisplayMode.Default)
                                     .setFolderName("webdavImage")
                                     .setZoomTransitionDuration(300)
                                     .setShowErrorToast(false)
