@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mSortLayout"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/vs_60"
+    android:layout_height="60dp"
     android:orientation="horizontal">
 
     <LinearLayout
@@ -17,7 +17,7 @@
         android:focusable="true"
         android:gravity="start|center_vertical"
         android:orientation="horizontal"
-        android:padding="@dimen/vs_10">
+        android:padding="1dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -27,17 +27,16 @@
             android:orientation="horizontal">
 
             <FrameLayout
-                android:layout_width="@dimen/vs_60"
+                android:layout_width="60dp"
                 android:layout_height="match_parent">
 
                 <ImageView
                     android:id="@+id/imgItem"
-                    android:layout_width="@dimen/vs_40"
-                    android:layout_height="@dimen/vs_40"
-                    android:layout_marginStart="@dimen/vs_10"
-                    android:layout_marginLeft="@dimen/vs_10"
-                    android:layout_marginEnd="@dimen/vs_10"
-                    android:layout_marginRight="@dimen/vs_10"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginRight="4dp"
                     app:srcCompat="@drawable/icon_drive" />
 
                 <TextView
@@ -45,14 +44,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
-                    android:layout_marginEnd="@dimen/vs_2"
-                    android:layout_marginRight="@dimen/vs_2"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginRight="2dp"
                     android:background="@color/color_000000_80"
-                    android:maxWidth="@dimen/vs_60"
-                    android:padding="@dimen/vs_1"
+                    android:maxWidth="60dp"
+                    android:padding="1dp"
                     android:singleLine="true"
                     android:textColor="@color/color_FFFFFF"
-                    android:textSize="@dimen/ts_10"
+                    android:textSize="12dp"
                     tools:visibility="gone" />
             </FrameLayout>
 
@@ -66,11 +65,11 @@
                 android:focusable="false"
                 android:gravity="center|left|center_vertical"
                 android:marqueeRepeatLimit="marquee_forever"
-                android:paddingLeft="@dimen/vs_15"
+                android:paddingLeft="2dp"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
                 android:textColor="@color/color_FFFFFF"
-                android:textSize="@dimen/ts_22" />
+                android:textSize="12dp" />
         </LinearLayout>
 
         <TextView
@@ -78,11 +77,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right|center_vertical"
-            android:layout_marginEnd="@dimen/vs_10"
-            android:layout_marginRight="@dimen/vs_10"
+            android:layout_marginEnd="1dp"
+            android:layout_marginRight="1dp"
             android:text="MM/dd/yyyy"
             android:textColor="@color/color_FFFFFF_70"
-            android:textSize="@dimen/ts_16"
+            android:textSize="10dp"
             android:visibility="gone" />
 
         <ImageView
@@ -97,15 +96,15 @@
 
     <ImageView
         android:id="@+id/imgConfig"
-        android:layout_width="@dimen/vs_80"
+        android:layout_width="32dp"
         android:layout_height="match_parent"
         android:layout_gravity="right|center_vertical|end"
-        android:layout_marginStart="@dimen/vs_10"
-        android:layout_marginLeft="@dimen/vs_10"
+        android:layout_marginStart="1dp"
+        android:layout_marginLeft="1dp"
         android:background="@drawable/shape_setting_model_focus"
         android:clickable="true"
         android:focusable="true"
-        android:padding="@dimen/vs_10"
+        android:padding="1dp"
         app:srcCompat="@drawable/icon_setting"
         tools:visibility="gone" />
 

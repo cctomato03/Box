@@ -377,8 +377,10 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void initData() {
-
+        Hawk.put(HawkConfig.API_URL, "https://file.cctomato.com/tv/1.json");
         // takagen99 : Switch to show / hide source title
+//        Hawk.put(HawkConfig.API_URL, "https://xiaoya.cctomato.com/tvbox/my.json");
+
         SourceBean home = ApiConfig.get().getHomeSourceBean();
         if (HomeShow) {
             if (home != null && home.getName() != null && !home.getName().isEmpty())

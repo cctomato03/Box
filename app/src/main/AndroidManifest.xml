@@ -84,7 +84,7 @@
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".ui.activity.DriveActivity"
-            android:screenOrientation="sensorLandscape" />
+            android:screenOrientation="sensorPortrait" />
         <activity
             android:name=".ui.activity.SearchActivity"
             android:windowSoftInputMode="stateHidden"

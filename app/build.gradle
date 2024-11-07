@@ -11,7 +11,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId 'com.github.tvbox.osc.tk'
+        applicationId 'com.cctomato.player'
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
