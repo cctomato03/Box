@@ -89,12 +89,7 @@ public class HomeActivity extends BaseActivity {
     private LinearLayout topLayout;
     private LinearLayout contentLayout;
     private TextView tvName;
-    private ImageView tvWifi;
-    private ImageView tvFind;
-    private ImageView tvStyle;
-    private ImageView tvDraw;
     private ImageView tvMenu;
-    private TextView tvDate;
     private TvRecyclerView mGridView;
     private NoScrollViewPager mViewPager;
     private SourceViewModel sourceViewModel;
@@ -108,17 +103,6 @@ public class HomeActivity extends BaseActivity {
     public View sortFocusView = null;
     private final Handler mHandler = new Handler();
     private long mExitTime = 0;
-    private final Runnable mRunnable = new Runnable() {
-        @SuppressLint({"DefaultLocale", "SetTextI18n"})
-        @Override
-        public void run() {
-            Date date = new Date();
-            @SuppressLint("SimpleDateFormat")
-            SimpleDateFormat timeFormat = new SimpleDateFormat(getString(R.string.hm_date1) + ", " + getString(R.string.hm_date2));
-            tvDate.setText(timeFormat.format(date));
-            mHandler.postDelayed(this, 1000);
-        }
-    };
 
     @Override
     protected int getLayoutResID() {
@@ -154,12 +138,7 @@ public class HomeActivity extends BaseActivity {
     private void initView() {
         this.topLayout = findViewById(R.id.topLayout);
         this.tvName = findViewById(R.id.tvName);
-        this.tvWifi = findViewById(R.id.tvWifi);
-        this.tvFind = findViewById(R.id.tvFind);
-        this.tvStyle = findViewById(R.id.tvStyle);
-        this.tvDraw = findViewById(R.id.tvDrawer);
         this.tvMenu = findViewById(R.id.tvMenu);
-        this.tvDate = findViewById(R.id.tvDate);
         this.contentLayout = findViewById(R.id.contentLayout);
         this.mGridView = findViewById(R.id.mGridViewCategory);
         this.mViewPager = findViewById(R.id.mViewPager);
@@ -257,56 +236,11 @@ public class HomeActivity extends BaseActivity {
                 return true;
             }
         });
-        // Button : Wifi >> Go into Android Wifi Settings -------------
-        tvWifi.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                }catch (Exception ignored){
-                }
-            }
-        });
-        // Button : Search --------------------------------------------
-        tvFind.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                jumpActivity(SearchActivity.class);
-            }
-        });
-        // Button : Style --------------------------------------------
-        tvStyle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    Hawk.put(HawkConfig.HOME_REC_STYLE, !Hawk.get(HawkConfig.HOME_REC_STYLE, false));
-                    if (Hawk.get(HawkConfig.HOME_REC_STYLE, false)) {
-                        UserFragment.tvHotListForGrid.setVisibility(View.VISIBLE);
-                        UserFragment.tvHotListForLine.setVisibility(View.GONE);
-                        Toast.makeText(HomeActivity.this, getString(R.string.hm_style_grid), Toast.LENGTH_SHORT).show();
-                        tvStyle.setImageResource(R.drawable.hm_up_down);
-                    } else {
-                        UserFragment.tvHotListForGrid.setVisibility(View.GONE);
-                        UserFragment.tvHotListForLine.setVisibility(View.VISIBLE);
-                        Toast.makeText(HomeActivity.this, getString(R.string.hm_style_line), Toast.LENGTH_SHORT).show();
-                        tvStyle.setImageResource(R.drawable.hm_left_right);
-                    }
-                } catch (Exception ex) {
-                }
-            }
-        });
-        // Button : Drawer >> To go into App Drawer -------------------
-        tvDraw.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                jumpActivity(AppsActivity.class);
-            }
-        });
         // Button : Settings >> To go into Settings --------------------
         tvMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                jumpActivity(SettingActivity.class);
+                jumpActivity(HistoryActivity.class);
             }
         });
         // Button : Settings >> To go into App Settings ----------------
@@ -315,13 +249,6 @@ public class HomeActivity extends BaseActivity {
             public boolean onLongClick(View view) {
                 startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", getPackageName(), null)));
                 return true;
-            }
-        });
-        // Button : Date >> Go into Android Date Settings --------------
-        tvDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(Settings.ACTION_DATE_SETTINGS));
             }
         });
         setLoadSir(this.contentLayout);
@@ -385,25 +312,6 @@ public class HomeActivity extends BaseActivity {
         if (HomeShow) {
             if (home != null && home.getName() != null && !home.getName().isEmpty())
                 tvName.setText(home.getName());
-        }
-
-        // takagen99: If network available, check connected Wifi or Lan
-        if (isNetworkAvailable()) {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-            if (cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_WIFI) {
-                tvWifi.setImageDrawable(res.getDrawable(R.drawable.hm_wifi));
-            } else if (cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_MOBILE) {
-                tvWifi.setImageDrawable(res.getDrawable(R.drawable.hm_mobile));
-            } else if (cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_ETHERNET) {
-                tvWifi.setImageDrawable(res.getDrawable(R.drawable.hm_lan));
-            }
-        }
-
-        // takagen99: Set Style either Grid or Line
-        if (Hawk.get(HawkConfig.HOME_REC_STYLE, false)) {
-            tvStyle.setImageResource(R.drawable.hm_up_down);
-        } else {
-            tvStyle.setImageResource(R.drawable.hm_left_right);
         }
 
         mGridView.requestFocus();
@@ -644,18 +552,11 @@ public class HomeActivity extends BaseActivity {
             tvName.setText(R.string.app_name);
         }
 
-        // takagen99: Icon Placement
-        if (Hawk.get(HawkConfig.HOME_SEARCH_POSITION, true)) {
-            tvFind.setVisibility(View.VISIBLE);
-        } else {
-            tvFind.setVisibility(View.GONE);
-        }
         if (Hawk.get(HawkConfig.HOME_MENU_POSITION, true)) {
             tvMenu.setVisibility(View.VISIBLE);
         } else {
             tvMenu.setVisibility(View.GONE);
         }
-        mHandler.post(mRunnable);
     }
 
     @Override
@@ -759,10 +660,6 @@ public class HomeActivity extends BaseActivity {
             animatorSet.setDuration(250);
             animatorSet.start();
             tvName.setFocusable(false);
-            tvWifi.setFocusable(false);
-            tvFind.setFocusable(false);
-            tvStyle.setFocusable(false);
-            tvDraw.setFocusable(false);
             tvMenu.setFocusable(false);
             return;
         }
@@ -778,10 +675,6 @@ public class HomeActivity extends BaseActivity {
             animatorSet.setDuration(250);
             animatorSet.start();
             tvName.setFocusable(true);
-            tvWifi.setFocusable(true);
-            tvFind.setFocusable(true);
-            tvStyle.setFocusable(true);
-            tvDraw.setFocusable(true);
             tvMenu.setFocusable(true);
         }
     }

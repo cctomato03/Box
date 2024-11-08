@@ -48,10 +48,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
     private LinearLayout tvDrive;
     private LinearLayout tvLive;
     private LinearLayout tvSearch;
-    private LinearLayout tvSetting;
-    private LinearLayout tvHistory;
     private LinearLayout tvCollect;
-    private LinearLayout tvPush;
     public static HomeHotVodAdapter homeHotVodAdapter;
     private List<Movie.Video> homeSourceRec;
     public static TvRecyclerView tvHotListForGrid;
@@ -78,11 +75,6 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             tvSearch.setVisibility(View.VISIBLE);
         } else {
             tvSearch.setVisibility(View.GONE);
-        }
-        if (!Hawk.get(HawkConfig.HOME_MENU_POSITION, true)) {
-            tvSetting.setVisibility(View.VISIBLE);
-        } else {
-            tvSetting.setVisibility(View.GONE);
         }
 
         super.onFragmentResume();
@@ -114,28 +106,19 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         tvDrive = findViewById(R.id.tvDrive);
         tvLive = findViewById(R.id.tvLive);
         tvSearch = findViewById(R.id.tvSearch);
-        tvSetting = findViewById(R.id.tvSetting);
         tvCollect = findViewById(R.id.tvFavorite);
-        tvHistory = findViewById(R.id.tvHistory);
-        tvPush = findViewById(R.id.tvPush);
         tvDrive.setOnClickListener(this);
         tvLive.setOnClickListener(this);
         tvSearch.setOnClickListener(this);
-        tvSetting.setOnClickListener(this);
-        tvHistory.setOnClickListener(this);
-        tvPush.setOnClickListener(this);
         tvCollect.setOnClickListener(this);
         tvDrive.setOnFocusChangeListener(focusChangeListener);
         tvLive.setOnFocusChangeListener(focusChangeListener);
         tvSearch.setOnFocusChangeListener(focusChangeListener);
-        tvSetting.setOnFocusChangeListener(focusChangeListener);
-        tvHistory.setOnFocusChangeListener(focusChangeListener);
-        tvPush.setOnFocusChangeListener(focusChangeListener);
         tvCollect.setOnFocusChangeListener(focusChangeListener);
         tvHotListForLine = findViewById(R.id.tvHotListForLine);
         tvHotListForGrid = findViewById(R.id.tvHotListForGrid);
         tvHotListForGrid.setHasFixedSize(true);
-        tvHotListForGrid.setLayoutManager(new V7GridLayoutManager(this.mContext, 5));
+        tvHotListForGrid.setLayoutManager(new V7GridLayoutManager(this.mContext, 2));
         homeHotVodAdapter = new HomeHotVodAdapter();
         homeHotVodAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
@@ -193,15 +176,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 return true;
             }
         });
-        
-        tvHistory.setOnLongClickListener(new View.OnLongClickListener() {
-        	@Override
-            public boolean onLongClick(View v) {
-                HomeActivity.homeRecf();
-                return HomeActivity.reHome(mContext);
-            }
-        });
-        
+
         // Grid View
         tvHotListForGrid.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
@@ -242,13 +217,15 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         initHomeHotVod(homeHotVodAdapter);
 
         // Swifly: Home Style
-        if (Hawk.get(HawkConfig.HOME_REC_STYLE, false)) {
-            tvHotListForGrid.setVisibility(View.VISIBLE);
-            tvHotListForLine.setVisibility(View.GONE);
-        } else {
-            tvHotListForGrid.setVisibility(View.GONE);
-            tvHotListForLine.setVisibility(View.VISIBLE);
-        }
+//        if (Hawk.get(HawkConfig.HOME_REC_STYLE, false)) {
+//            tvHotListForGrid.setVisibility(View.VISIBLE);
+//            tvHotListForLine.setVisibility(View.GONE);
+//        } else {
+//            tvHotListForGrid.setVisibility(View.GONE);
+//            tvHotListForLine.setVisibility(View.VISIBLE);
+//        }
+        tvHotListForGrid.setVisibility(View.VISIBLE);
+        tvHotListForLine.setVisibility(View.GONE);
     }
 
     private void initHomeHotVod(HomeHotVodAdapter adapter) {
@@ -340,11 +317,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             jumpActivity(LivePlayActivity.class);
         } else if (v.getId() == R.id.tvSearch) {
             jumpActivity(SearchActivity.class);
-        } else if (v.getId() == R.id.tvSetting) {
-            jumpActivity(SettingActivity.class);
-        } else if (v.getId() == R.id.tvHistory) {
-            jumpActivity(HistoryActivity.class);
-        } else if (v.getId() == R.id.tvPush) {
+        }  else if (v.getId() == R.id.tvPush) {
             jumpActivity(PushActivity.class);
         } else if (v.getId() == R.id.tvFavorite) {
             jumpActivity(CollectActivity.class);

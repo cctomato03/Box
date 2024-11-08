@@ -47,7 +47,7 @@
 
         <activity
             android:name=".ui.activity.HomeActivity"
-            android:screenOrientation="sensorLandscape"
+            android:screenOrientation="sensorPortrait"
             android:exported="true"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" >
             <intent-filter>
