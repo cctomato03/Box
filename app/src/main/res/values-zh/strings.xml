@@ -133,6 +133,7 @@
     <string name="act_search_txt">请输入要搜索的内容</string>
     <string name="act_settings">设置</string>
     <string name="act_home">首页</string>
+    <string name="act_live">直播</string>
     <string name="act_player">播放器</string>
     <string name="act_system">系统</string>
 

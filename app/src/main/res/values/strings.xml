@@ -134,6 +134,7 @@
     <string name="act_search_txt">Enter Search Title</string>
     <string name="act_settings">Settings</string>
     <string name="act_home">Home</string>
+    <string name="act_live">Live</string>
     <string name="act_player">Player</string>
     <string name="act_system">System</string>
 
