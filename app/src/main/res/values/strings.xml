@@ -192,6 +192,8 @@
     <string name="sub_style">Style</string>
     <string name="sub_style_text">ABC.</string>
 
+    <string name="toolbar_navigation_close_description">Close demo</string>
+
     <string-array name="doh_name">
         <item>System</item>
         <item>Tencent</item>

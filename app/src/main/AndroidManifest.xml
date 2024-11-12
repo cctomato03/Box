@@ -41,7 +41,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:extractNativeLibs="true"
-        android:theme="@style/Theme.BottomNavigationViewsActivity"
+        android:theme="@style/Theme.Main"
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true">
 

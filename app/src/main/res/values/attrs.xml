@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <attr name="catalogToolbarStyle" format="reference"/>
+    <attr name="catalogToolbarWithCloseButtonStyle" format="reference"/>
+    <attr name="textInputSignInStyle" format="reference"/>
+
     <attr name="fontPath" format="string" />
     <attr name="textFieldStyle" format="reference" />
 

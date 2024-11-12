@@ -32,7 +32,7 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        setTopNav();
+//        setTopNav();
 
         final TextView textView = binding.textHome;
         textView.setText(R.string.act_home);
@@ -46,22 +46,22 @@ public class HomeFragment extends Fragment {
         binding = null;
     }
 
-    private void setTopNav() {
-        requireActivity().addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-                menu.clear();
-                menuInflater.inflate(R.menu.home_top_menu, menu);
-            }
-
-            @Override
-            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-                if (menuItem.getItemId() == R.id.home_history_button) {
-                    Toast.makeText(getContext(), "hahha", Toast.LENGTH_SHORT).show();
-                    return true;
-                }
-                return false;
-            }
-        });
-    }
+//    private void setTopNav() {
+//        requireActivity().addMenuProvider(new MenuProvider() {
+//            @Override
+//            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+//                menu.clear();
+//                menuInflater.inflate(R.menu.home_top_menu, menu);
+//            }
+//
+//            @Override
+//            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+//                if (menuItem.getItemId() == R.id.home_history_button) {
+//                    Toast.makeText(getContext(), "hahha", Toast.LENGTH_SHORT).show();
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
+//    }
 }

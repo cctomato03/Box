@@ -6,9 +6,9 @@
         android:title="@string/act_home" />
 
     <item
-        android:id="@+id/navigation_search"
-        android:icon="@drawable/tab_search"
-        android:title="@string/act_search" />
+        android:id="@+id/navigation_file"
+        android:icon="@drawable/tab_file"
+        android:title="@string/hm_file" />
 
     <item
         android:id="@+id/navigation_live"
@@ -17,6 +17,6 @@
 
     <item
         android:id="@+id/navigation_setting"
-        android:icon="@drawable/tab_setting"
+        android:icon="@drawable/tab_settings"
         android:title="@string/act_settings" />
 </menu>
