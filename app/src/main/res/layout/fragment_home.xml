@@ -6,6 +6,26 @@
     android:layout_height="match_parent"
     tools:context=".ui.fragment.HomeFragment">
 
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/home_top_bar"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        >
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            app:title="@string/app_name"
+            app:menu="@menu/home_top_menu"
+            app:navigationIcon="@drawable/home_top_history" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
     <LinearLayout
         android:id="@+id/topLayout"
         android:layout_width="match_parent"
@@ -17,7 +37,7 @@
         android:paddingRight="5dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/home_top_bar">
 
         <View
             android:layout_width="5dp"

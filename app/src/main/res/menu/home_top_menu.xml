@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/home_history_button"
-        android:icon="@drawable/hm_history"
-        android:title="@string/act_hist"
+        android:id="@+id/home_top_search"
+        android:icon="@drawable/home_top_search"
+        android:title="@string/act_search"
         app:showAsAction="ifRoom"/>
 </menu>
