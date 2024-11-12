@@ -254,24 +254,6 @@ public class HomeActivity extends BaseActivity {
         setLoadSir(this.contentLayout);
         //mHandler.postDelayed(mFindFocus, 250);
     }
-    
-    public static boolean reHome(Context appContext) {
-        Intent intent = new Intent(appContext, HomeActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        Bundle bundle = new Bundle();
-        bundle.putBoolean("useCache", true);
-        intent.putExtras(bundle);
-        appContext.startActivity(intent);
-        return true;
-    }
-    
-    public static void homeRecf() { //站点切换
-        int homeRec = Hawk.get(HawkConfig.HOME_REC, -1);
-        int limit = 2;
-        if (homeRec == limit) homeRec = -1;
-        homeRec++;
-        Hawk.put(HawkConfig.HOME_REC, homeRec);
-    }
 
     private void initViewModel() {
         sourceViewModel = new ViewModelProvider(this).get(SourceViewModel.class);
@@ -294,14 +276,6 @@ public class HomeActivity extends BaseActivity {
 
     // takagen99 : Switch to show / hide source title
     boolean HomeShow = Hawk.get(HawkConfig.HOME_SHOW_SOURCE, false);
-
-    // takagen99 : Check if network is available
-    boolean isNetworkAvailable() {
-        ConnectivityManager cm
-                = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
-    }
 
     private void initData() {
         Hawk.put(HawkConfig.API_URL, "https://file.cctomato.com/tv/1.json");
@@ -611,11 +585,6 @@ public class HomeActivity extends BaseActivity {
             if (event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
                 showSiteSwitch();
             }
-//            if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
-//                if () {
-//
-//                }
-//            }
         } else if (event.getAction() == KeyEvent.ACTION_UP) {
 
         }
@@ -735,14 +704,7 @@ public class HomeActivity extends BaseActivity {
             dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-//                    if (homeSourceKey != null && !homeSourceKey.equals(Hawk.get(HawkConfig.HOME_API, ""))) {
-//                        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-//                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//                        Bundle bundle = new Bundle();
-//                        bundle.putBoolean("useCache", true);
-//                        intent.putExtras(bundle);
-//                        HomeActivity.this.startActivity(intent);
-//                    }
+
                 }
             });
             dialog.show();
@@ -757,14 +719,5 @@ public class HomeActivity extends BaseActivity {
         intent.putExtras(bundle);
         HomeActivity.this.startActivity(intent);
     }
-
-//    public void onClick(View v) {
-//        FastClickCheckUtil.check(v);
-//        if (v.getId() == R.id.tvFind) {
-//            jumpActivity(SearchActivity.class);
-//        } else if (v.getId() == R.id.tvMenu) {
-//            jumpActivity(SettingActivity.class);
-//        }
-//    }
 
 }
