@@ -5,6 +5,7 @@ import static android.content.Intent.getIntent;
 import android.Manifest;
 import android.app.ActionBar;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,20 +33,13 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
-
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
-import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.bean.AbsSortXml;
 import com.github.tvbox.osc.bean.MovieSort;
 import com.github.tvbox.osc.bean.SourceBean;
-import com.github.tvbox.osc.callback.LoadingCallback;
 import com.github.tvbox.osc.databinding.FragmentHomeBinding;
-import com.github.tvbox.osc.server.ControlManager;
-import com.github.tvbox.osc.ui.activity.HistoryActivity;
-import com.github.tvbox.osc.ui.activity.HomeActivity;
-import com.github.tvbox.osc.ui.activity.LivePlayActivity;
 import com.github.tvbox.osc.ui.adapter.HomePageAdapter;
 import com.github.tvbox.osc.ui.adapter.SortAdapter;
 import com.github.tvbox.osc.ui.dialog.TipDialog;
@@ -53,33 +47,24 @@ import com.github.tvbox.osc.ui.tv.widget.DefaultTransformer;
 import com.github.tvbox.osc.ui.tv.widget.FixedSpeedScroller;
 import com.github.tvbox.osc.ui.tv.widget.NoScrollViewPager;
 import com.github.tvbox.osc.util.DefaultConfig;
-import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
-import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.kingja.loadsir.callback.Callback;
-import com.kingja.loadsir.core.LoadService;
-import com.kingja.loadsir.core.LoadSir;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
-import org.greenrobot.eventbus.EventBus;
-
-import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
 public class HomeFragment extends Fragment {
-    private LinearLayout topLayout;
+    private static Resources res;
+
     private LinearLayout contentLayout;
     private MaterialToolbar toolbar;
-    private LoadService mLoadService;
     private TvRecyclerView mGridView;
     private NoScrollViewPager mViewPager;
     private SourceViewModel sourceViewModel;
@@ -91,29 +76,21 @@ public class HomeFragment extends Fragment {
     private int currentSelected = 0;
     private final Handler mHandler = new Handler();
 
+    public static   String getResString(int resId) {
+        return res.getString(resId);
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        res = getResources();
+
         useCacheConfig = false;
+
         initViewModel();
         initData();
-    }
 
-    protected void setLoadSir(View view) {
-        if (mLoadService == null) {
-            mLoadService = LoadSir.getDefault().register(view, new Callback.OnReloadListener() {
-                @Override
-                public void onReload(View v) {
-                }
-            });
-        }
-    }
-
-    protected void showLoading() {
-        if (mLoadService != null) {
-            mLoadService.showCallback(LoadingCallback.class);
-        }
     }
 
     private boolean dataInitOk = false;
@@ -129,15 +106,12 @@ public class HomeFragment extends Fragment {
         if (HomeShow) {
             if (home != null && home.getName() != null && !home.getName().isEmpty())
                 toolbar.setTitle(home.getName());
-//                tvName.setText(home.getName());
         }
 
         if (dataInitOk && jarInitOk) {
-            showLoading();
             sourceViewModel.getSort(ApiConfig.get().getHomeSourceBean().getKey());
             return;
         }
-        showLoading();
         if (dataInitOk && !jarInitOk) {
             if (!ApiConfig.get().getSpider().isEmpty()) {
                 ApiConfig.get().loadJar(useCacheConfig, ApiConfig.get().getSpider(), new ApiConfig.LoadConfigCallback() {
@@ -178,9 +152,8 @@ public class HomeFragment extends Fragment {
             }
             return;
         }
-        ApiConfig.get().loadConfig(useCacheConfig, new ApiConfig.LoadConfigCallback() {
-            TipDialog dialog = null;
 
+        ApiConfig.get().loadConfig(useCacheConfig, new ApiConfig.LoadConfigCallback() {
             @Override
             public void retry() {
                 mHandler.post(new Runnable() {
@@ -221,47 +194,7 @@ public class HomeFragment extends Fragment {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (dialog == null)
-                            dialog = new TipDialog(HomeFragment.this.requireContext(), msg, getString(R.string.hm_retry), getString(R.string.hm_cancel), new TipDialog.OnListener() {
-                                @Override
-                                public void left() {
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            initData();
-                                            dialog.hide();
-                                        }
-                                    });
-                                }
 
-                                @Override
-                                public void right() {
-                                    dataInitOk = true;
-                                    jarInitOk = true;
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            initData();
-                                            dialog.hide();
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void cancel() {
-                                    dataInitOk = true;
-                                    jarInitOk = true;
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            initData();
-                                            dialog.hide();
-                                        }
-                                    });
-                                }
-                            });
-                        if (!dialog.isShowing())
-                            dialog.show();
                     }
                 });
             }
@@ -301,12 +234,12 @@ public class HomeFragment extends Fragment {
         sourceViewModel.sortResult.observe(getViewLifecycleOwner(), new Observer<AbsSortXml>() {
             @Override
             public void onChanged(AbsSortXml absXml) {
-//                showSuccess();
                 if (absXml != null && absXml.classes != null && absXml.classes.sortList != null) {
                     sortAdapter.setNewData(DefaultConfig.adjustSort(ApiConfig.get().getHomeSourceBean().getKey(), absXml.classes.sortList, true));
                 } else {
                     sortAdapter.setNewData(DefaultConfig.adjustSort(ApiConfig.get().getHomeSourceBean().getKey(), new ArrayList<>(), true));
                 }
+
                 initViewPager(absXml);
             }
         });
@@ -319,7 +252,6 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
 
         this.toolbar = binding.topAppBar;
-        this.topLayout = binding.topLayout;
         this.contentLayout = binding.contentLayout;
         this.mGridView = binding.mGridViewCategory;
         this.mViewPager = binding.mViewPager;
@@ -328,13 +260,8 @@ public class HomeFragment extends Fragment {
         this.mGridView.setSpacingWithMargins(0, AutoSizeUtils.dp2px(this.requireContext(), 10.0f));
         this.mGridView.setAdapter(this.sortAdapter);
 
-        setLoadSir(this.contentLayout);
-
         return binding.getRoot();
     }
-
-
-
 
     @Override
     public void onDestroyView() {

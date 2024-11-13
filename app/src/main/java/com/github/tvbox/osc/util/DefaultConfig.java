@@ -15,6 +15,7 @@ import com.github.tvbox.osc.bean.MovieSort;
 import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.ui.activity.HomeActivity;
+import com.github.tvbox.osc.ui.fragment.HomeFragment;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.hjq.permissions.Permission;
@@ -60,7 +61,7 @@ public class DefaultConfig {
             }
         }
         if (withMy)
-            data.add(0, new MovieSort.SortData("my0", HomeActivity.getRes().getString(R.string.app_home)));
+            data.add(0, new MovieSort.SortData("my0", HomeFragment.getResString(R.string.app_home)));
         Collections.sort(data);
         return data;
     }
