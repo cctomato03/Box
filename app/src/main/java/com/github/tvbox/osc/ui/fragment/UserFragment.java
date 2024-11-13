@@ -7,6 +7,9 @@ import android.view.animation.BounceInterpolator;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
@@ -46,9 +49,8 @@ import java.util.List;
  */
 public class UserFragment extends BaseLazyFragment implements View.OnClickListener {
     public static HomeHotVodAdapter homeHotVodAdapter;
+    public static RecyclerView tvHotListForGrid;
     private List<Movie.Video> homeSourceRec;
-    public static TvRecyclerView tvHotListForGrid;
-
     public static UserFragment newInstance() {
         return new UserFragment();
     }
@@ -92,82 +94,60 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         EventBus.getDefault().register(this);
         tvHotListForGrid = findViewById(R.id.tvHotListForGrid);
         tvHotListForGrid.setHasFixedSize(true);
-        tvHotListForGrid.setLayoutManager(new V7GridLayoutManager(this.mContext, 5));
-        homeHotVodAdapter = new HomeHotVodAdapter();
-        homeHotVodAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                if (ApiConfig.get().getSourceBeanList().isEmpty())
-                    return;
-                Movie.Video vod = ((Movie.Video) adapter.getItem(position));
+        tvHotListForGrid.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-                // takagen99: CHeck if in Delete Mode
-                if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, 0) == 2) && HawkConfig.hotVodDelete) {
-                    homeHotVodAdapter.remove(position);
-                    VodInfo vodInfo = RoomDataManger.getVodInfo(vod.sourceKey, vod.id);
-                    RoomDataManger.deleteVodRecord(vod.sourceKey, vodInfo);
-                    Toast.makeText(mContext, getString(R.string.hm_hist_del), Toast.LENGTH_SHORT).show();
-                } else if (vod.id != null && !vod.id.isEmpty()) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString("id", vod.id);
-                    bundle.putString("sourceKey", vod.sourceKey);
-                    if (vod.id.startsWith("msearch:")) {
-                        bundle.putString("title", vod.name);
-                        jumpActivity(FastSearchActivity.class, bundle);
-                    } else {
-                        jumpActivity(DetailActivity.class, bundle);
-                    }
+        homeHotVodAdapter = new HomeHotVodAdapter();
+        homeHotVodAdapter.setOnItemClickListener((adapter, view, position) -> {
+            if (ApiConfig.get().getSourceBeanList().isEmpty())
+                return;
+            Movie.Video vod = ((Movie.Video) adapter.getItem(position));
+
+            // takagen99: CHeck if in Delete Mode
+            if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, 0) == 2) && HawkConfig.hotVodDelete) {
+                homeHotVodAdapter.remove(position);
+                VodInfo vodInfo = RoomDataManger.getVodInfo(vod.sourceKey, vod.id);
+                RoomDataManger.deleteVodRecord(vod.sourceKey, vodInfo);
+                Toast.makeText(mContext, getString(R.string.hm_hist_del), Toast.LENGTH_SHORT).show();
+            } else if (vod.id != null && !vod.id.isEmpty()) {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", vod.id);
+                bundle.putString("sourceKey", vod.sourceKey);
+                if (vod.id.startsWith("msearch:")) {
+                    bundle.putString("title", vod.name);
+                    jumpActivity(FastSearchActivity.class, bundle);
                 } else {
-                    Intent newIntent;
-                    if(Hawk.get(HawkConfig.FAST_SEARCH_MODE, false)){
-                        newIntent = new Intent(mContext, FastSearchActivity.class);
-                    }else {
-                        newIntent = new Intent(mContext, SearchActivity.class);
-                    }
-                    newIntent.putExtra("title", vod.name);
-                    newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    mActivity.startActivity(newIntent);
+                    jumpActivity(DetailActivity.class, bundle);
                 }
+            } else {
+                Intent newIntent;
+                if(Hawk.get(HawkConfig.FAST_SEARCH_MODE, false)){
+                    newIntent = new Intent(mContext, FastSearchActivity.class);
+                }else {
+                    newIntent = new Intent(mContext, SearchActivity.class);
+                }
+                newIntent.putExtra("title", vod.name);
+                newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                mActivity.startActivity(newIntent);
             }
         });
         // takagen99 : Long press to trigger Delete Mode for VOD History on Home Page
-        homeHotVodAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
-                if (ApiConfig.get().getSourceBeanList().isEmpty())
-                    return false;
-                Movie.Video vod = ((Movie.Video) adapter.getItem(position));
-                // Additional Check if : Home Rec 0=豆瓣, 1=推荐, 2=历史
-                if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, 0) == 2)) {
-                    HawkConfig.hotVodDelete = !HawkConfig.hotVodDelete;
-                    homeHotVodAdapter.notifyDataSetChanged();
-                } else {
-                    Intent newIntent = new Intent(mContext, FastSearchActivity.class);
-                    newIntent.putExtra("title", vod.name);
-                    newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    mActivity.startActivity(newIntent);
-                }
-                return true;
+        homeHotVodAdapter.setOnItemLongClickListener((adapter, view, position) -> {
+            if (ApiConfig.get().getSourceBeanList().isEmpty())
+                return false;
+            Movie.Video vod = ((Movie.Video) adapter.getItem(position));
+            // Additional Check if : Home Rec 0=豆瓣, 1=推荐, 2=历史
+            if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, 0) == 2)) {
+                HawkConfig.hotVodDelete = !HawkConfig.hotVodDelete;
+                homeHotVodAdapter.notifyDataSetChanged();
+            } else {
+                Intent newIntent = new Intent(mContext, FastSearchActivity.class);
+                newIntent.putExtra("title", vod.name);
+                newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                mActivity.startActivity(newIntent);
             }
+            return true;
         });
 
-        // Grid View
-        tvHotListForGrid.setOnItemListener(new TvRecyclerView.OnItemListener() {
-            @Override
-            public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
-                itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
-            }
-
-            @Override
-            public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
-                itemView.animate().scaleX(1.2f).scaleY(1.2f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
-            }
-
-            @Override
-            public void onItemClick(TvRecyclerView parent, View itemView, int position) {
-
-            }
-        });
         tvHotListForGrid.setAdapter(homeHotVodAdapter);
         initHomeHotVod(homeHotVodAdapter);
 
@@ -175,14 +155,10 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
     }
 
     private void initHomeHotVod(HomeHotVodAdapter adapter) {
-//        if (Hawk.get(HawkConfig.HOME_REC, 0) == 1) {
-//            if (homeSourceRec != null) {
-//                adapter.setNewData(homeSourceRec);
-//            }
-//            return;
-//        } else if (Hawk.get(HawkConfig.HOME_REC, 0) == 2) {
-//            return;
-//        }
+        if (homeSourceRec != null) {
+            adapter.setNewData(homeSourceRec);
+            return;
+        }
         try {
             Calendar cal = Calendar.getInstance();
             int year = cal.get(Calendar.YEAR);

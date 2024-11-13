@@ -1,28 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp"
-    android:clipChildren="false"
-    android:clipToPadding="false"
-    android:orientation="vertical"
-    android:paddingLeft="4dp"
-    android:paddingTop="10dp"
-    android:paddingRight="4dp"
-    android:background="@color/colorPrimary"
-    android:paddingBottom="20dp">
+    android:orientation="vertical">
 
-    <com.owen.tvrecyclerview.widget.TvRecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tvHotListForGrid"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:descendantFocusability="afterDescendants"
-        android:tag="tvHotListForGrid"
-        app:tv_layoutManager="V7GridLayoutManager"
-        app:tv_selectedItemIsCentered="true"
-        app:tv_verticalSpacingWithMargins="@dimen/vs_15" />
+        android:layout_height="match_parent" />
 
 </LinearLayout>
