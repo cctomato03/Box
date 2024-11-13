@@ -30,9 +30,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseLazyFragment;
@@ -48,8 +53,11 @@ import com.github.tvbox.osc.ui.tv.widget.FixedSpeedScroller;
 import com.github.tvbox.osc.ui.tv.widget.NoScrollViewPager;
 import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.ViewUtil;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
@@ -63,10 +71,10 @@ import me.jessyan.autosize.utils.AutoSizeUtils;
 public class HomeFragment extends Fragment {
     private static Resources res;
 
-    private LinearLayout contentLayout;
+    private List<TabLayout> tabLayouts;
+    private ViewPager2 viewPager;
+    private TabLayout listItem;
     private MaterialToolbar toolbar;
-    private TvRecyclerView mGridView;
-    private NoScrollViewPager mViewPager;
     private SourceViewModel sourceViewModel;
     private SortAdapter sortAdapter;
     private HomePageAdapter pageAdapter;
@@ -76,7 +84,7 @@ public class HomeFragment extends Fragment {
     private int currentSelected = 0;
     private final Handler mHandler = new Handler();
 
-    public static   String getResString(int resId) {
+    public static String getResString(int resId) {
         return res.getString(resId);
     }
 
@@ -203,29 +211,29 @@ public class HomeFragment extends Fragment {
 
     private void initViewPager(AbsSortXml absXml) {
         if (sortAdapter.getData().size() > 0) {
-            for (MovieSort.SortData data : sortAdapter.getData()) {
-                if (data.id.equals("my0")) {
-                    if (Hawk.get(HawkConfig.HOME_REC, 0) == 1 && absXml != null && absXml.videoList != null && absXml.videoList.size() > 0) {
-                        fragments.add(UserFragment.newInstance(absXml.videoList));
-                    } else {
-                        fragments.add(UserFragment.newInstance(null));
-                    }
-                } else {
-                    fragments.add(GridFragment.newInstance(data));
-                }
-            }
-            pageAdapter = new HomePageAdapter(this.requireActivity().getSupportFragmentManager(), fragments);
             try {
-                Field field = ViewPager.class.getDeclaredField("mScroller");
-                field.setAccessible(true);
-                FixedSpeedScroller scroller = new FixedSpeedScroller(this.requireContext(), new AccelerateInterpolator());
-                field.set(mViewPager, scroller);
-                scroller.setmDuration(300);
+                ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager(), getLifecycle());
+                for (MovieSort.SortData data : sortAdapter.getData()) {
+                    if (data.id.equals("my0")) {
+                        if (Hawk.get(HawkConfig.HOME_REC, 0) == 1 && absXml != null && absXml.videoList != null && absXml.videoList.size() > 0) {
+                            adapter.addFragment(UserFragment.newInstance(absXml.videoList));
+                        } else {
+                            adapter.addFragment(UserFragment.newInstance(null));
+                        }
+                    } else {
+                        adapter.addFragment(GridFragment.newInstance(data));
+                    }
+                }
+//                adapter.addFragment(new LiveFragment());
+                viewPager.setAdapter(adapter);
+                for (TabLayout tabLayout : tabLayouts) {
+                    new TabLayoutMediator(
+                            tabLayout, viewPager, (tab, position) -> tab.setText(sortAdapter.getData().get(position).name))
+                            .attach();
+                }
             } catch (Exception e) {
+                e.printStackTrace();
             }
-            mViewPager.setPageTransformer(true, new DefaultTransformer());
-            mViewPager.setAdapter(pageAdapter);
-            mViewPager.setCurrentItem(currentSelected, false);
         }
     }
 
@@ -250,17 +258,35 @@ public class HomeFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
-
+        tabLayouts = ViewUtil.findViewsWithType(binding.getRoot(), TabLayout.class);
         this.toolbar = binding.topAppBar;
-        this.contentLayout = binding.contentLayout;
-        this.mGridView = binding.mGridViewCategory;
-        this.mViewPager = binding.mViewPager;
+        this.listItem = binding.listItem;
+        this.viewPager = binding.viewpager;
         this.sortAdapter = new SortAdapter();
-        this.mGridView.setLayoutManager(new V7LinearLayoutManager(this.requireContext(), 0, false));
-        this.mGridView.setSpacingWithMargins(0, AutoSizeUtils.dp2px(this.requireContext(), 10.0f));
-        this.mGridView.setAdapter(this.sortAdapter);
 
         return binding.getRoot();
+    }
+
+    static class ViewPagerAdapter extends FragmentStateAdapter {
+        private final ArrayList<Fragment> arrayList = new ArrayList<>();
+
+        public ViewPagerAdapter(FragmentManager fragmentManager, Lifecycle lifecycle) {
+            super(fragmentManager, lifecycle);
+        }
+
+        public void addFragment(Fragment fragment) {
+            arrayList.add(fragment);
+        }
+
+        @Override
+        public int getItemCount() {
+            return arrayList.size();
+        }
+
+        @Override
+        public Fragment createFragment(int position) {
+            return arrayList.get(position);
+        }
     }
 
     @Override
