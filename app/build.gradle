@@ -11,7 +11,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId 'com.cctomato.player'
+        applicationId 'com.cctomato.tv'
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
