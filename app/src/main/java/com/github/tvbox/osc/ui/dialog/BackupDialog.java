@@ -13,7 +13,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.data.AppDataManager;
-import com.github.tvbox.osc.ui.activity.HomeActivity;
+import com.github.tvbox.osc.ui.activity.MainActivity;
 import com.github.tvbox.osc.ui.adapter.BackupAdapter;
 import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.FileUtils;
@@ -64,7 +64,7 @@ public class BackupDialog extends BaseDialog {
             @Override
             public void onClick(View v) {
                 if (XXPermissions.isGranted(getContext(), DefaultConfig.StoragePermissionGroup())) {
-                    Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_permission_ok), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_permission_ok), Toast.LENGTH_SHORT).show();
                 } else {
                     XXPermissions.with(getContext())
                             .permission(DefaultConfig.StoragePermissionGroup())
@@ -73,17 +73,17 @@ public class BackupDialog extends BaseDialog {
                                 public void onGranted(List<String> permissions, boolean all) {
                                     if (all) {
                                         adapter.setNewData(allBackup());
-                                        Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_permission_ok), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_permission_ok), Toast.LENGTH_SHORT).show();
                                     }
                                 }
 
                                 @Override
                                 public void onDenied(List<String> permissions, boolean never) {
                                     if (never) {
-                                        Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_permission_fail2), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_permission_fail2), Toast.LENGTH_SHORT).show();
                                         XXPermissions.startPermissionActivity((Activity) getContext(), permissions);
                                     } else {
-                                        Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_permission_fail1), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_permission_fail1), Toast.LENGTH_SHORT).show();
                                     }
                                 }
                             });
@@ -144,12 +144,12 @@ public class BackupDialog extends BaseDialog {
                                 sharedPreferences.edit().putString(key, value).commit();
                             }
                         }
-                        Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_rest_ok), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_rest_ok), Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_rest_fail_hk), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_rest_fail_hk), Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_rest_fail_db), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_rest_fail_db), Toast.LENGTH_SHORT).show();
                 }
             }
         } catch (Throwable e) {
@@ -180,17 +180,17 @@ public class BackupDialog extends BaseDialog {
                 }
                 if (!FileUtils.writeSimple(jsonObject.toString().getBytes("UTF-8"), new File(backup, "hawk"))) {
                     backup.delete();
-                    Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_bkup_fail_hk), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_bkup_fail_hk), Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_bkup_ok), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_bkup_ok), Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_bkup_fail_db), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_bkup_fail_db), Toast.LENGTH_SHORT).show();
                 backup.delete();
             }
         } catch (Throwable e) {
             e.printStackTrace();
-            Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_bkup_fail), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_bkup_fail), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -199,7 +199,7 @@ public class BackupDialog extends BaseDialog {
             String root = Environment.getExternalStorageDirectory().getAbsolutePath();
             File backup = new File(root + "/tvbox_backup/" + dir);
             FileUtils.recursiveDelete(backup);
-            Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.set_bkup_del), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.set_bkup_del), Toast.LENGTH_SHORT).show();
         } catch (Throwable e) {
             e.printStackTrace();
         }

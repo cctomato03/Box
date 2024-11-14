@@ -3,8 +3,7 @@ package com.github.tvbox.osc.util;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.bean.SourceBean;
-import com.github.tvbox.osc.ui.activity.HomeActivity;
-import com.github.tvbox.osc.ui.activity.SearchActivity;
+import com.github.tvbox.osc.ui.activity.MainActivity;
 import com.orhanobut.hawk.Hawk;
 
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ import java.util.List;
 public class SearchHelper {
 
     public static HashMap<String, String> getSourcesForSearch() {
-        String api = Hawk.get(HawkConfig.API_URL, HomeActivity.getRes().getString(R.string.app_source));
+        String api = Hawk.get(HawkConfig.API_URL, MainActivity.getRes().getString(R.string.app_source));
         if (api.isEmpty()) {
             return null;
         }
@@ -42,7 +41,7 @@ public class SearchHelper {
     }
 
     public static void putCheckedSources(HashMap<String, String> mCheckSources) {
-        String api = Hawk.get(HawkConfig.API_URL, HomeActivity.getRes().getString(R.string.app_source));
+        String api = Hawk.get(HawkConfig.API_URL, MainActivity.getRes().getString(R.string.app_source));
         if (api.isEmpty()) {
             return;
         }
@@ -55,7 +54,7 @@ public class SearchHelper {
     }
 
     public static void putCheckedSource(String siteKey, boolean checked) {
-        String api = Hawk.get(HawkConfig.API_URL, HomeActivity.getRes().getString(R.string.app_source));
+        String api = Hawk.get(HawkConfig.API_URL, MainActivity.getRes().getString(R.string.app_source));
         if (api.isEmpty()) {
             return;
         }

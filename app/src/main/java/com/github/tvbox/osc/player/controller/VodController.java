@@ -40,7 +40,7 @@ import com.github.tvbox.osc.player.thirdparty.MXPlayer;
 import com.github.tvbox.osc.player.thirdparty.ReexPlayer;
 import com.github.tvbox.osc.subtitle.widget.SimpleSubtitleView;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
-import com.github.tvbox.osc.ui.activity.HomeActivity;
+import com.github.tvbox.osc.ui.activity.MainActivity;
 import com.github.tvbox.osc.ui.adapter.ParseAdapter;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
@@ -720,7 +720,7 @@ public class VodController extends BaseController {
                         players.add(12);
                     }
                     SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
-                    dialog.setTip(HomeActivity.getRes().getString(R.string.dia_player));
+                    dialog.setTip(MainActivity.getRes().getString(R.string.dia_player));
                     dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                         @Override
                         public void click(Integer value, int pos) {
@@ -799,14 +799,14 @@ public class VodController extends BaseController {
                 if (mSubtitleView.getVisibility() == View.GONE) {
                     mSubtitleView.setVisibility(VISIBLE);
                     hideBottom();
-                    Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.vod_sub_on), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.vod_sub_on), Toast.LENGTH_SHORT).show();
                 } else {
                     mSubtitleView.setVisibility(View.GONE);
                     // mSubtitleView.destroy();
                     // mSubtitleView.clearSubtitleCache();
                     // mSubtitleView.isInternal = false;
                     hideBottom();
-                    Toast.makeText(getContext(), HomeActivity.getRes().getString(R.string.vod_sub_off), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), MainActivity.getRes().getString(R.string.vod_sub_off), Toast.LENGTH_SHORT).show();
                 }
                 return true;
             }

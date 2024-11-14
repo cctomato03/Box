@@ -187,9 +187,9 @@ public class SettingActivity extends BaseActivity {
             if (currentApi.equals(Hawk.get(HawkConfig.API_URL, "")) & (currentLive.equals(Hawk.get(HawkConfig.LIVE_URL, "")))) {
                 Bundle bundle = new Bundle();
                 bundle.putBoolean("useCache", true);
-                jumpActivity(HomeActivity.class, bundle);
+//                jumpActivity(HomeActivity.class, bundle);
             } else {
-                jumpActivity(HomeActivity.class);
+//                jumpActivity(HomeActivity.class);
             }
         } else {
             super.onBackPressed();

@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.transition.Visibility;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -47,58 +48,45 @@ import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.databinding.FragmentHomeBinding;
 import com.github.tvbox.osc.ui.adapter.HomePageAdapter;
 import com.github.tvbox.osc.ui.adapter.SortAdapter;
-import com.github.tvbox.osc.ui.dialog.TipDialog;
-import com.github.tvbox.osc.ui.tv.widget.DefaultTransformer;
-import com.github.tvbox.osc.ui.tv.widget.FixedSpeedScroller;
-import com.github.tvbox.osc.ui.tv.widget.NoScrollViewPager;
 import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.ViewUtil;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.orhanobut.hawk.Hawk;
-import com.owen.tvrecyclerview.widget.TvRecyclerView;
-import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
-
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
-import me.jessyan.autosize.utils.AutoSizeUtils;
 
 public class HomeFragment extends Fragment {
     private static Resources res;
 
+    private CircularProgressIndicator homeProgress;
     private List<TabLayout> tabLayouts;
     private ViewPager2 viewPager;
-    private TabLayout listItem;
     private MaterialToolbar toolbar;
+    private TabLayout listItem;
     private SourceViewModel sourceViewModel;
     private SortAdapter sortAdapter;
-    private HomePageAdapter pageAdapter;
     private FragmentHomeBinding binding;
     boolean useCacheConfig = false;
-    private final List<BaseLazyFragment> fragments = new ArrayList<>();
-    private int currentSelected = 0;
     private final Handler mHandler = new Handler();
-
     public static String getResString(int resId) {
         return res.getString(resId);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         res = getResources();
+    }
 
-        useCacheConfig = false;
-
-        initViewModel();
-        initData();
-
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
     }
 
     private boolean dataInitOk = false;
@@ -106,10 +94,6 @@ public class HomeFragment extends Fragment {
     boolean HomeShow = Hawk.get(HawkConfig.HOME_SHOW_SOURCE, false);
 
     private void initData() {
-        Hawk.put(HawkConfig.API_URL, "https://file.cctomato.com/tv/1.json");
-        // takagen99 : Switch to show / hide source title
-//        Hawk.put(HawkConfig.API_URL, "https://xiaoya.cctomato.com/tvbox/my.json");
-
         SourceBean home = ApiConfig.get().getHomeSourceBean();
         if (HomeShow) {
             if (home != null && home.getName() != null && !home.getName().isEmpty())
@@ -129,9 +113,6 @@ public class HomeFragment extends Fragment {
                         mHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (!useCacheConfig) {
-                                    Toast.makeText(HomeFragment.this.requireContext(), getString(R.string.hm_ok), Toast.LENGTH_SHORT).show();
-                                }
                                 initData();
                             }
                         }, 50);
@@ -148,16 +129,13 @@ public class HomeFragment extends Fragment {
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                if ("".equals(msg))
-                                    Toast.makeText(HomeFragment.this.requireContext(), getString(R.string.hm_notok), Toast.LENGTH_SHORT).show();
-                                else
-                                    Toast.makeText(HomeFragment.this.requireContext(), msg, Toast.LENGTH_SHORT).show();
                                 initData();
                             }
                         });
                     }
                 });
             }
+
             return;
         }
 
@@ -188,6 +166,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void error(String msg) {
+                stopLoading(false);
                 if (msg.equalsIgnoreCase("-1")) {
                     mHandler.post(new Runnable() {
                         @Override
@@ -235,6 +214,7 @@ public class HomeFragment extends Fragment {
                 e.printStackTrace();
             }
         }
+        stopLoading(true);
     }
 
     private void initViewModel() {
@@ -253,16 +233,50 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    private void startLoading() {
+        this.listItem.setVisibility(View.GONE);
+        this.viewPager.setVisibility(View.GONE);
+        this.homeProgress.setVisibility(View.VISIBLE);
+        this.homeProgress.setIndeterminate(true);
+    }
+
+    private void stopLoading(boolean success) {
+        this.homeProgress.setIndeterminate(false);
+        this.homeProgress.setVisibility(View.GONE);
+        if (success) {
+            this.listItem.setVisibility(View.VISIBLE);
+            this.viewPager.setVisibility(View.VISIBLE);
+        } else {
+            this.listItem.setVisibility(View.GONE);
+            this.viewPager.setVisibility(View.GONE);
+        }
+    }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         tabLayouts = ViewUtil.findViewsWithType(binding.getRoot(), TabLayout.class);
         this.toolbar = binding.topAppBar;
-        this.listItem = binding.listItem;
+        this.toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (view.getId() == R.id.home_top_search) {
+
+                } else if (view.getId() == R.id.home_top_hist) {
+
+                }
+            }
+        });
         this.viewPager = binding.viewpager;
+        this.listItem = binding.listItem;
+        this.homeProgress = binding.homeProgress;
+
+        startLoading();
+
         this.sortAdapter = new SortAdapter();
+        useCacheConfig = false;
+        initViewModel();
+        initData();
 
         return binding.getRoot();
     }
