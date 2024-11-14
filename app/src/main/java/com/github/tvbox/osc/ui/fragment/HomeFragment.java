@@ -35,18 +35,17 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
-import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.bean.AbsSortXml;
 import com.github.tvbox.osc.bean.MovieSort;
 import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.databinding.FragmentHomeBinding;
-import com.github.tvbox.osc.ui.adapter.HomePageAdapter;
+import com.github.tvbox.osc.ui.activity.HistoryActivity;
+import com.github.tvbox.osc.ui.activity.SearchActivity;
 import com.github.tvbox.osc.ui.adapter.SortAdapter;
 import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.HawkConfig;
@@ -257,14 +256,18 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         tabLayouts = ViewUtil.findViewsWithType(binding.getRoot(), TabLayout.class);
         this.toolbar = binding.topAppBar;
-        this.toolbar.setOnClickListener(new View.OnClickListener() {
+        this.toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
-            public void onClick(View view) {
-                if (view.getId() == R.id.home_top_search) {
-
-                } else if (view.getId() == R.id.home_top_hist) {
-
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.home_top_search) {
+                    Intent intent = new Intent(getActivity(), SearchActivity.class);
+                    startActivity(intent);
+                } else if (item.getItemId() == R.id.home_top_hist) {
+                    Intent intent = new Intent(getActivity(), HistoryActivity.class);
+                    startActivity(intent);
                 }
+
+                return false;
             }
         });
         this.viewPager = binding.viewpager;

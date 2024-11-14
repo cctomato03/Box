@@ -98,6 +98,11 @@
     <string name="dia_reset">确定重置将清除配置</string>
     <string name="dia_media_setting_title">播放器设置</string>
 
+    <string name="bottom_storage_type">请选择存盘类型</string>
+    <string name="bottom_webdav">WebDAV</string>
+    <string name="bottom_local">本地</string>
+    <string name="bottom_alist">Alist</string>
+
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">备份成功!</string>
     <string name="set_bkup_del">备份删除</string>

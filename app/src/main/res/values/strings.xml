@@ -98,6 +98,11 @@
     <string name="dia_reset">Reset Clear Configuration</string>
     <string name="dia_media_setting_title">Media Setting</string>
 
+    <string name="bottom_storage_type">Choose Storage</string>
+    <string name="bottom_webdav">WebDAV</string>
+    <string name="bottom_local">Local</string>
+    <string name="bottom_alist">Alist</string>
+
 
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">Backup Success</string>
