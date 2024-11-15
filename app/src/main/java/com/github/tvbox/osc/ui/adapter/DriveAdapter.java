@@ -40,27 +40,28 @@ public class DriveAdapter extends BaseQuickAdapter<DriveFolderFile, BaseViewHold
         lastModified.setVisibility(View.GONE);
         if(item.isDrive())
         {
-            if(item.getDriveType() == StorageDriveType.TYPE.LOCAL)
-                imgItem.setImageResource(R.drawable.icon_sdcard);
-            else if(item.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
-                imgItem.setImageResource(R.drawable.icon_circle_node);
-            } else if(item.getDriveType() == StorageDriveType.TYPE.ALISTWEB) {
-                imgItem.setImageResource(R.drawable.icon_alist);
-            }
+//            if(item.getDriveType() == StorageDriveType.TYPE.LOCAL)
+//                imgItem.setImageResource(R.drawable.icon_sdcard);
+//            else if(item.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
+//                imgItem.setImageResource(R.drawable.icon_circle_node);
+//            } else if(item.getDriveType() == StorageDriveType.TYPE.ALISTWEB) {
+//                imgItem.setImageResource(R.drawable.icon_alist);
+//            }
+            imgItem.setImageResource(R.drawable.tab_file);
         } else {
             if(item.isFile) {
                 lastModified.setText(item.getFormattedLastModified());
                 lastModified.setVisibility(View.VISIBLE);
-                imgItem.setImageResource(R.drawable.icon_file);
-//                if(StorageDriveType.isVideoType(item.fileType)) {
-//                    imgItem.setImageResource(R.drawable.icon_film);
-//                } else if (StorageDriveType.isImageType(item.fileType)) {
-//                    ImgUtil.load(item.fileUrl, imgItem,  0);
-//                } else {
-//                    imgItem.setImageResource(R.drawable.icon_file);
-//                }
+//            if(StorageDriveType.isVideoType(item.fileType)) {
+//                imgItem.setImageResource(R.drawable.icon_film);
+//            } else if (StorageDriveType.isImageType(item.fileType)) {
+//                ImgUtil.load(item.fileUrl, imgItem,  0);
+//            } else {
+//                imgItem.setImageResource(R.drawable.icon_file);
+//            }
+                imgItem.setImageResource(R.drawable.driver_file);
             } else {
-                imgItem.setImageResource(R.drawable.icon_folder);
+                imgItem.setImageResource(R.drawable.tab_file);
             }
         }
     }

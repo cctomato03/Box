@@ -30,6 +30,7 @@
     <string name="det_expand">全屏</string>
     <string name="det_search">快搜</string>
     <string name="det_sort">倒序</string>
+    <string name="det_refresh">刷新</string>
     <string name="det_push">推送</string>
     <string name="det_fav">收藏</string>
     <string name="det_fav_add">已添加收藏</string>
@@ -111,8 +112,17 @@
     <string name="webdav_path">初始路径</string>
     <string name="webdav_username">用户名</string>
     <string name="webdav_password">密码</string>
+    <string name="webdav_connect_error">无法访问该WebDAV地址</string>
 
+    <string name="driver_sort_title">请选择列表排序方式</string>
+    <string name="driver_sort_type_name_asc">按名字升序</string>
+    <string name="driver_sort_type_name_desc">按名字降序</string>
+    <string name="driver_sort_type_time_asc">按修改时间升序</string>
+    <string name="driver_sort_type_time_desc">按修改时间降序</string>
     <string name="driver_delete">确认删除吗？</string>
+    <string name="driver_edit_operation">编辑</string>
+    <string name="driver_delete_operation">删除</string>
+    <string name="driver_choose_operation">选择操作</string>
 
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">备份成功!</string>

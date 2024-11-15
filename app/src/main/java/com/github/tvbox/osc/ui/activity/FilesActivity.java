@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,6 +60,7 @@ import com.github.tvbox.osc.viewmodel.drive.LocalDriveViewModel;
 import com.github.tvbox.osc.viewmodel.drive.WebDAVDriveViewModel;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -95,6 +97,7 @@ public class FilesActivity extends AppCompatActivity {
 
     private RecyclerView mGridView;
     private FilesAdapter adapter = new FilesAdapter();
+    private CircularProgressIndicator filesProgress;
     private List<DriveFolderFile> drives = null;
     private AbstractDriveViewModel viewModel = null;
     private int sortType = 0;
@@ -118,7 +121,6 @@ public class FilesActivity extends AppCompatActivity {
                 viewModel = new AlistDriveViewModel();
             }
             viewModel.setCurrentDrive(item);
-            viewModel.setSortType(sortType);
         }
 
         setContentView(R.layout.activity_files);
@@ -129,11 +131,37 @@ public class FilesActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        returnPreviousFolder();
+    }
+
+    private void returnPreviousFolder() {
+        if (viewModel.getCurrentDriveNote().parentFolder == null) {
+            finish();
+        } else {
+            viewModel.getCurrentDriveNote().setChildren(null);
+            viewModel.setCurrentDriveNote(viewModel.getCurrentDriveNote().parentFolder);
+            if (viewModel.getCurrentDriveNote() == null) {
+                viewModel = null;
+                initData();
+                return;
+            }
+            loadDriveData();
+        }
+    }
+
+    private void startLoading() {
+        this.filesProgress.setVisibility(View.VISIBLE);
+        this.filesProgress.setIndeterminate(true);
+    }
+
+    private void stopLoading() {
+        this.filesProgress.setVisibility(View.GONE);
+        this.filesProgress.setIndeterminate(false);
     }
 
     private void initView() {
         this.mGridView = findViewById(R.id.mGridView);
+        this.filesProgress = findViewById(R.id.files_progress);
         this.toolbar = findViewById(R.id.files_top_bar);
 
         this.toolbar.setNavigationIcon(R.drawable.navigation_back);
@@ -141,7 +169,7 @@ public class FilesActivity extends AppCompatActivity {
         this.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
+                returnPreviousFolder();
             }
         });
 
@@ -150,12 +178,14 @@ public class FilesActivity extends AppCompatActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.files_top_sort) {
                     openSortDialog();
+                } else if (item.getItemId() == R.id.files_top_refresh) {
+                    loadDriveData();
                 }
                 return false;
             }
         });
 
-        this.mGridView.setLayoutManager(new LinearLayoutManager(getApplicationContext(), RecyclerView.VERTICAL, false));
+        this.mGridView.setLayoutManager(new LinearLayoutManager(FilesActivity.this, RecyclerView.VERTICAL, false));
         this.mGridView.setAdapter(this.adapter);
         this.mGridView.setAdapter(this.adapter);
         this.adapter.bindToRecyclerView(this.mGridView);
@@ -166,14 +196,6 @@ public class FilesActivity extends AppCompatActivity {
             if (!selectedItem.isFile) {
                 viewModel.setCurrentDriveNote(selectedItem);
                 loadDriveData();
-//                Bundle bundle = new Bundle();
-//                selectedItem.parentFolder = null;
-//                String jsonData = GsonUtils.toJson(selectedItem);
-//                bundle.putString("viewModel", jsonData);
-//
-//                Intent intent = new Intent(getApplicationContext(), FilesActivity.class);
-//                intent.putExtras(bundle);
-//                startActivity(intent);
             } else {
                 // takagen99 - To only play media file
                 if (StorageDriveType.isVideoType(selectedItem.fileType)) {
@@ -203,7 +225,7 @@ public class FilesActivity extends AppCompatActivity {
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast toast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
+                                        Toast toast = Toast.makeText(FilesActivity.this, msg, Toast.LENGTH_SHORT);
                                         toast.show();
                                     }
                                 });
@@ -337,31 +359,35 @@ public class FilesActivity extends AppCompatActivity {
         bundle.putSerializable("VodInfo", vodInfo);
         // takagen99 - to play file here zzzzzzzzzzzzzzz
 
-        Intent intent = new Intent(getApplicationContext(), PlayActivity.class);
+        Intent intent = new Intent(FilesActivity.this, PlayActivity.class);
         intent.putExtras(bundle);
         startActivity(intent);
     }
 
     private void openSortDialog() {
-        List<String> options = Arrays.asList("按名字升序", "按名字降序", "按修改时间升序", "按修改时间降序");
+        CharSequence[] choices = {MainActivity.getRes().getString(R.string.driver_sort_type_name_asc),
+                MainActivity.getRes().getString(R.string.driver_sort_type_name_desc),
+                MainActivity.getRes().getString(R.string.driver_sort_type_time_asc),
+                MainActivity.getRes().getString(R.string.driver_sort_type_time_desc)
+        };
         int sort = Hawk.get(HawkConfig.STORAGE_DRIVE_SORT, 0);
-        SelectDialog<String> dialog = new SelectDialog<>(FilesActivity.this);
-        dialog.setTip("请选择列表排序方式");
-        dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<String>() {
-            @Override
-            public void click(String value, int pos) {
-                sortType = pos;
-                Hawk.put(HawkConfig.STORAGE_DRIVE_SORT, pos);
-                dialog.dismiss();
-                loadDriveData();
-            }
 
-            @Override
-            public String getDisplay(String val) {
-                return val;
-            }
-        }, null, options, sort);
-        dialog.show();
+        new MaterialAlertDialogBuilder(FilesActivity.this)
+                .setTitle(MainActivity.getRes().getString(R.string.driver_sort_title))
+                .setPositiveButton(
+                        MainActivity.getRes().getString(R.string.confirm),
+                        (DialogInterface dialog, int which) -> {
+                            int checkedItemPosition =
+                                    ((androidx.appcompat.app.AlertDialog) dialog).getListView().getCheckedItemPosition();
+                            if (checkedItemPosition != AdapterView.INVALID_POSITION) {
+                                sortType = checkedItemPosition;
+                                Hawk.put(HawkConfig.STORAGE_DRIVE_SORT, checkedItemPosition);
+                                loadDriveData();
+                            }
+                        })
+                .setNegativeButton(MainActivity.getRes().getString(R.string.cancel), null)
+                .setSingleChoiceItems(choices, sort, null)
+                .show();
     }
 
     private void initData() {
@@ -371,13 +397,15 @@ public class FilesActivity extends AppCompatActivity {
     }
 
     private void loadDriveData() {
-
+        startLoading();
+        viewModel.setSortType(sortType);
         String path = viewModel.loadData(new AbstractDriveViewModel.LoadDataCallback() {
             @Override
             public void callback(List<DriveFolderFile> list, boolean alreadyHasChildren) {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
+                        stopLoading();
                         adapter.setNewData(viewModel.getCurrentDriveNote().getChildren());
                     }
                 });
@@ -386,11 +414,11 @@ public class FilesActivity extends AppCompatActivity {
             @Override
             public void fail(String message) {
 
-                viewModel = null;
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                        stopLoading();
+                        Toast.makeText(FilesActivity.this, message, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -398,6 +426,8 @@ public class FilesActivity extends AppCompatActivity {
 
         if (StringUtils.isNotEmpty(path)) {
             this.toolbar.setTitle(path);
+        } else {
+            this.toolbar.setTitle(item.name);
         }
     }
 

@@ -240,15 +240,27 @@ public class DriversFragment extends Fragment {
         this.adapter.bindToRecyclerView(this.mGridView);
 
         this.adapter.setOnItemLongClickListener((adapter, view, position) -> {
+            CharSequence[] choices = {MainActivity.getRes().getString(R.string.driver_edit_operation), MainActivity.getRes().getString(R.string.driver_delete_operation)};
             new MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.driver_delete)
-                    .setNegativeButton(R.string.cancel, null)
-                    .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                    .setTitle(MainActivity.getRes().getString(R.string.driver_choose_operation))
+                    .setItems(choices, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            DriveFolderFile selectedDrive = drives.get(position);
-                            RoomDataManger.deleteDrive(selectedDrive.getDriveData().getId());
-                            initData();
+                            if (i == 0) {
+                                openWebdavDialog(((DriveFolderFile) adapter.getItem(position)).getDriveData());
+                            } else if (i == 1) {
+                                new MaterialAlertDialogBuilder(requireContext())
+                                        .setTitle(R.string.driver_delete)
+                                        .setNegativeButton(R.string.cancel, null)
+                                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int i) {
+                                                DriveFolderFile selectedDrive = drives.get(position);
+                                                RoomDataManger.deleteDrive(selectedDrive.getDriveData().getId());
+                                                initData();
+                                            }
+                                        }).show();
+                            }
                         }
                     }).show();
             return false;

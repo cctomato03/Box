@@ -30,6 +30,7 @@
     <string name="det_expand">Expand</string>
     <string name="det_search">Search</string>
     <string name="det_sort">Sort</string>
+    <string name="det_refresh">Refresh</string>
     <string name="det_push">Push</string>
     <string name="det_fav">Favorite</string>
     <string name="det_fav_add">Added to Favorite</string>
@@ -101,7 +102,7 @@
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
 
-    <string name="bottom_storage_type">Choose Storage</string>
+    <string name="bottom_storage_type">Select Storage</string>
     <string name="bottom_webdav">WebDAV</string>
     <string name="bottom_local">Local</string>
     <string name="bottom_alist">Alist</string>
@@ -111,8 +112,18 @@
     <string name="webdav_path">WebDAV Path</string>
     <string name="webdav_username">UserName</string>
     <string name="webdav_password">Password</string>
+    <string name="webdav_connect_error">Connect Error</string>
 
+    <string name="driver_sort_title">Select Sort Type</string>
+    <string name="driver_sort_type_name_asc">Ascending By Name</string>
+    <string name="driver_sort_type_name_desc">Descending By Name</string>
+    <string name="driver_sort_type_time_asc">Ascending By Date</string>
+    <string name="driver_sort_type_time_desc">Descending By Date</string>
     <string name="driver_delete">Confirm Delete</string>
+    <string name="driver_edit_operation">Edit</string>
+    <string name="driver_delete_operation">Delete</string>
+    <string name="driver_choose_operation">Select Operation</string>
+
 
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">Backup Success</string>
