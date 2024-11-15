@@ -84,7 +84,7 @@
             android:name=".ui.activity.PushActivity"
             android:screenOrientation="sensorLandscape" />
         <activity
-            android:name=".ui.activity.DriveActivity"
+            android:name=".ui.activity.FilesActivity"
             android:screenOrientation="sensorPortrait" />
         <activity
             android:name=".ui.activity.SearchActivity"

@@ -1,112 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mSortLayout"
     android:layout_width="match_parent"
-    android:layout_height="60dp"
+    android:layout_height="72dp"
+    android:gravity="center_vertical"
     android:orientation="horizontal">
 
-    <LinearLayout
-        android:id="@+id/mItemLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@drawable/shape_setting_model_focus"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="start|center_vertical"
-        android:orientation="horizontal"
-        android:padding="1dp">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="left|center_vertical"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <FrameLayout
-                android:layout_width="60dp"
-                android:layout_height="match_parent">
-
-                <ImageView
-                    android:id="@+id/imgItem"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_marginLeft="12dp"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginRight="4dp"
-                    app:srcCompat="@drawable/icon_drive" />
-
-                <TextView
-                    android:id="@+id/txtMediaName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginEnd="2dp"
-                    android:layout_marginRight="2dp"
-                    android:background="@color/color_000000_80"
-                    android:maxWidth="60dp"
-                    android:padding="1dp"
-                    android:singleLine="true"
-                    android:textColor="@color/color_FFFFFF"
-                    android:textSize="12dp"
-                    tools:visibility="gone" />
-            </FrameLayout>
-
-            <TextView
-                android:id="@+id/txtItemName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="1"
-                android:ellipsize="marquee"
-                android:focusable="false"
-                android:gravity="center|left|center_vertical"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:paddingLeft="2dp"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:textColor="@color/color_FFFFFF"
-                android:textSize="12dp" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/txtModifiedDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right|center_vertical"
-            android:layout_marginEnd="1dp"
-            android:layout_marginRight="1dp"
-            android:text="MM/dd/yyyy"
-            android:textColor="@color/color_FFFFFF_70"
-            android:textSize="10dp"
-            android:visibility="gone" />
+    <FrameLayout
+        android:id="@+id/iconLayout"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:clipToPadding="false"
+        android:duplicateParentState="true"
+        android:padding="4dp">
 
         <ImageView
-            android:id="@+id/delDrive"
+            android:id="@+id/imgItem"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:srcCompat="@drawable/icon_drive"
+            android:duplicateParentState="true"
+            android:scaleType="centerCrop"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:duplicateParentState="true"
+        android:orientation="vertical">
+
+        <!-- Lint says android:ellipsize="middle" and android:maxLines="1" crashes. -->
+        <TextView
+            android:id="@+id/nameText"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="right|center_vertical"
-            android:visibility="gone"
-            app:srcCompat="@drawable/icon_delete" />
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:textAppearance="?textAppearanceListItem" />
 
+        <TextView
+            android:id="@+id/descriptionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="?textAppearanceListItemSecondary"
+            android:textColor="?android:textColorSecondary" />
     </LinearLayout>
-
-    <ImageView
-        android:id="@+id/imgConfig"
-        android:layout_width="32dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="right|center_vertical|end"
-        android:layout_marginStart="1dp"
-        android:layout_marginLeft="1dp"
-        android:background="@drawable/shape_setting_model_focus"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="1dp"
-        app:srcCompat="@drawable/icon_setting"
-        tools:visibility="gone" />
 
 
 </LinearLayout>

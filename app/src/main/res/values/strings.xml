@@ -98,11 +98,21 @@
     <string name="dia_reset">Reset Clear Configuration</string>
     <string name="dia_media_setting_title">Media Setting</string>
 
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+
     <string name="bottom_storage_type">Choose Storage</string>
     <string name="bottom_webdav">WebDAV</string>
     <string name="bottom_local">Local</string>
     <string name="bottom_alist">Alist</string>
 
+    <string name="webdav_namespace">NameSpace</string>
+    <string name="webdav_address">WebDAV Address</string>
+    <string name="webdav_path">WebDAV Path</string>
+    <string name="webdav_username">UserName</string>
+    <string name="webdav_password">Password</string>
+
+    <string name="driver_delete">Confirm Delete</string>
 
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">Backup Success</string>

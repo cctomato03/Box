@@ -7,16 +7,4 @@
         android:icon="@drawable/files_top_sort"
         android:title="@string/det_sort"
         app:showAsAction="ifRoom"/>
-
-    <item
-        android:id="@+id/files_top_add"
-        android:icon="@drawable/files_top_add"
-        android:title="@string/det_fav_add"
-        app:showAsAction="ifRoom"/>
-
-    <item
-        android:id="@+id/files_top_delete"
-        android:icon="@drawable/files_top_delete"
-        android:title="@string/det_fav_add"
-        app:showAsAction="ifRoom"/>
 </menu>

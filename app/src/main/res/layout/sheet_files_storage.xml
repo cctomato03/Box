@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottom_drawer_2"
     android:layout_width="match_parent"
-    android:layout_height="240dp">
+    android:layout_height="220dp">
 
     <com.google.android.material.bottomsheet.BottomSheetDragHandleView
         android:id="@+id/drag_handle"
@@ -25,7 +25,9 @@
         android:id="@+id/webdav_button"
         android:textStyle="bold"
         android:paddingTop="12dp"
-        android:layout_width="match_parent"
+        style="@style/Widget.Material3.Button.TextButton.Icon"
+        app:icon="@drawable/ic_dialogs_button"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/sheet_files_storage_title"
         android:layout_centerHorizontal="true"
@@ -34,19 +36,11 @@
     <Button
         android:id="@+id/alist_button"
         android:textStyle="bold"
-        android:layout_width="match_parent"
+        style="@style/Widget.Material3.Button.TextButton.Icon"
+        app:icon="@drawable/ic_dialogs_button"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/webdav_button"
         android:layout_centerHorizontal="true"
         android:text="@string/bottom_alist"/>
-
-    <Button
-        android:id="@+id/local_button"
-        android:textStyle="bold"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/alist_button"
-        android:layout_centerHorizontal="true"
-        android:text="@string/bottom_local"/>
-
 </RelativeLayout>

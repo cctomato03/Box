@@ -5,29 +5,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".ui.fragment.FilesFragment">
+    tools:context=".ui.fragment.DriversFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/files_top_layout"
+        android:id="@+id/drivers_top_layout"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         >
 
         <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/files_top_bar"
+            android:id="@+id/drivers_top_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="?attr/actionBarSize"
             app:title="@string/hm_file"
-            app:menu="@menu/files_top_menu" />
+            app:menu="@menu/drivers_top_menu" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
-        android:id="@+id/filesContentLayout"
+        android:id="@+id/driversContentLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipChildren="false"
@@ -36,7 +36,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/files_top_layout">
+        app:layout_constraintTop_toBottomOf="@+id/drivers_top_layout">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/mGridView"
