@@ -92,6 +92,7 @@ import cc.shinichi.library.ImagePreview;
 import cc.shinichi.library.bean.ImageInfo;
 import cc.shinichi.library.view.listener.OnBigImageLongClickListener;
 import cc.shinichi.library.view.listener.OnDownloadClickListener;
+import cc.shinichi.library.view.listener.OnDownloadListener;
 
 public class FilesActivity extends AppCompatActivity {
 
@@ -129,26 +130,6 @@ public class FilesActivity extends AppCompatActivity {
         initData();
     }
 
-    @Override
-    public void onBackPressed() {
-        returnPreviousFolder();
-    }
-
-    private void returnPreviousFolder() {
-        if (viewModel.getCurrentDriveNote().parentFolder == null) {
-            finish();
-        } else {
-            viewModel.getCurrentDriveNote().setChildren(null);
-            viewModel.setCurrentDriveNote(viewModel.getCurrentDriveNote().parentFolder);
-            if (viewModel.getCurrentDriveNote() == null) {
-                viewModel = null;
-                initData();
-                return;
-            }
-            loadDriveData();
-        }
-    }
-
     private void startLoading() {
         this.filesProgress.setVisibility(View.VISIBLE);
         this.filesProgress.setIndeterminate(true);
@@ -157,6 +138,10 @@ public class FilesActivity extends AppCompatActivity {
     private void stopLoading() {
         this.filesProgress.setVisibility(View.GONE);
         this.filesProgress.setIndeterminate(false);
+    }
+
+    private String subUrl(String path) {
+        return (path.endsWith("/") ? (path.substring(0, path.length() - 1)) : path);
     }
 
     private void initView() {
@@ -169,7 +154,7 @@ public class FilesActivity extends AppCompatActivity {
         this.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                returnPreviousFolder();
+                finish();
             }
         });
 
@@ -194,18 +179,22 @@ public class FilesActivity extends AppCompatActivity {
             DriveFolderFile selectedItem = ((DriveFolderFile) adapter.getItem(position));
 
             if (!selectedItem.isFile) {
-                viewModel.setCurrentDriveNote(selectedItem);
-                loadDriveData();
+                Bundle bundle = new Bundle();
+                String data = GsonUtils.toJson(selectedItem);
+                bundle.putString("viewModel", data);
+
+                Intent intent = new Intent(this, FilesActivity.class);
+                intent.putExtras(bundle);
+                startActivity(intent);
             } else {
                 // takagen99 - To only play media file
                 if (StorageDriveType.isVideoType(selectedItem.fileType)) {
                     DriveFolderFile currentDrive = viewModel.getCurrentDrive();
-                    if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL)
-                        playFile(currentDrive.name + selectedItem.getAccessingPathStr() + selectedItem.name);
-                    else if (currentDrive.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
+                    if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
+                        playFile(subUrl(selectedItem.getPathStr()));
+                    } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
                         JsonObject config = currentDrive.getConfig();
-                        String targetPath = selectedItem.getAccessingPathStr() + selectedItem.name;
-                        playFile(config.get("url").getAsString() + targetPath);
+                        playFile(config.get("url").getAsString() + subUrl(selectedItem.getPathStr()));
                     } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.ALISTWEB) {
                         AlistDriveViewModel boxedViewModel = (AlistDriveViewModel) viewModel;
 
@@ -232,7 +221,9 @@ public class FilesActivity extends AppCompatActivity {
                             }
                         });
                     }
-                } else if (StorageDriveType.isImageType(selectedItem.fileType) && viewModel.getCurrentDrive().getDriveType() == StorageDriveType.TYPE.WEBDAV) {
+                } else if (StorageDriveType.isImageType(selectedItem.fileType)) {
+                    DriveFolderFile currentDrive = viewModel.getCurrentDrive();
+
                     List<ImageInfo> imageInfoList = new ArrayList<>();
                     int imageIndex = 0;
                     for (Object object : adapter.getData()) {
@@ -240,17 +231,22 @@ public class FilesActivity extends AppCompatActivity {
 
                         if (StorageDriveType.isImageType(driveFolderFile.fileType)) {
                             ImageInfo imageInfo = new ImageInfo();
-
-                            JsonObject config = viewModel.getCurrentDrive().getConfig();
-                            String targetPath = driveFolderFile.getAccessingPathStr() + driveFolderFile.name;
-                            imageInfo.setOriginUrl(config.get("url").getAsString() + targetPath);
                             imageInfo.setName(driveFolderFile.name);
 
-                            String credentialStr = viewModel.getCurrentDrive().getWebDAVBase64Credential();
-                            if (credentialStr != null) {
-                                HashMap<String, String> header = new HashMap<>();
-                                header.put("authorization", "Basic " + credentialStr);
-                                imageInfo.setHeader(header);
+                            if (currentDrive.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
+                                JsonObject config = viewModel.getCurrentDrive().getConfig();
+                                String url = config.get("url").getAsString() + subUrl(driveFolderFile.getPathStr());
+                                imageInfo.setOriginUrl(url);
+
+                                String credentialStr = viewModel.getCurrentDrive().getWebDAVBase64Credential();
+                                if (credentialStr != null) {
+                                    HashMap<String, String> header = new HashMap<>();
+                                    header.put("authorization", "Basic " + credentialStr);
+                                    imageInfo.setHeader(header);
+                                }
+                            } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
+                                File file = new File(subUrl(driveFolderFile.getPathStr()));
+                                imageInfo.setOriginUrl(subUrl(driveFolderFile.getPathStr()));
                             }
 
                             imageInfoList.add(imageInfo);
@@ -268,7 +264,7 @@ public class FilesActivity extends AppCompatActivity {
                                 .setLongPicDisplayMode(ImagePreview.LongPicDisplayMode.Default)
                                 .setFolderName("webdavImage")
                                 .setZoomTransitionDuration(300)
-                                .setShowErrorToast(false)
+                                .setShowErrorToast(true)
                                 .setEnableClickClose(false)
                                 .setBigImageLongClickListener(new OnBigImageLongClickListener() {
                                     @Override
@@ -280,27 +276,30 @@ public class FilesActivity extends AppCompatActivity {
                                     @Override
                                     public void onClick(Activity activity, View view, int position) {
                                         // 可以在此处执行您自己的下载逻辑、埋点统计等信息
-                                        File cacheFile = getGlideCacheFile(FilesActivity.this, imageInfoList.get(position).getOriginUrl());
+                                        File cacheFile = new File(imageInfoList.get(position).getOriginUrl());
+                                        if (currentDrive.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
+                                            cacheFile = getGlideCacheFile(FilesActivity.this, imageInfoList.get(position).getOriginUrl());
+                                        }
+
                                         if (cacheFile != null && cacheFile.exists()) {
                                             try {
                                                 ExifInterface exifInterface = new ExifInterface(new FileInputStream(cacheFile));
                                                 String downloadLink = exifInterface.getAttribute(androidx.exifinterface.media.ExifInterface.TAG_ARTIST);
                                                 if (downloadLink != null && !downloadLink.isEmpty()) {
                                                     AlertDialog dialog = new AlertDialog.Builder(activity)
-                                                            .setTitle("提示")
-                                                            .setMessage("这里将会提取图片中的链接信息")
-                                                            .setPositiveButton("复制", (dialog1, which) -> {
+                                                            .setTitle(MainActivity.getRes().getString(R.string.driver_photo_link_content))
+                                                            .setPositiveButton(MainActivity.getRes().getString(R.string.driver_photo_link_copy), (dialog1, which) -> {
                                                                 ClipboardManager clipboardManager =
                                                                         (ClipboardManager) FilesActivity.this.getSystemService(Context.CLIPBOARD_SERVICE);
                                                                 clipboardManager.setPrimaryClip(ClipData.newPlainText("label", downloadLink));
                                                             })
-                                                            .setNegativeButton("打开", (dialog1, which) -> {
+                                                            .setNegativeButton(MainActivity.getRes().getString(R.string.driver_photo_link_download), (dialog1, which) -> {
                                                                 Intent openIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadLink));
                                                                 try {
                                                                     startActivity(openIntent);
                                                                 } catch (
                                                                         ActivityNotFoundException e) {
-                                                                    Toast.makeText(FilesActivity.this, "没有找到打开此链接的应用", Toast.LENGTH_SHORT).show();
+                                                                    Toast.makeText(FilesActivity.this, MainActivity.getRes().getString(R.string.driver_photo_link_un_support), Toast.LENGTH_SHORT).show();
                                                                 }
                                                             })
                                                             .create();
@@ -323,7 +322,7 @@ public class FilesActivity extends AppCompatActivity {
                                 }).start();
                     }
                 } else {
-                    Toast.makeText(FilesActivity.this, "Media Unsupported", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FilesActivity.this, R.string.driver_media_unsupported, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -412,9 +411,9 @@ public class FilesActivity extends AppCompatActivity {
 
     private void loadDriveData() {
         if (item.getDriveType() == StorageDriveType.TYPE.LOCAL) {
-            if (App.getInstance().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (App.getInstance().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(FilesActivity.this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
                 return;
             }
         }
@@ -428,7 +427,7 @@ public class FilesActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         stopLoading();
-                        adapter.setNewData(viewModel.getCurrentDriveNote().getChildren());
+                        adapter.setNewData(viewModel.getCurrentDrive().getChildren());
                     }
                 });
             }

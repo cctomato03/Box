@@ -124,6 +124,12 @@
     <string name="driver_delete_operation">删除</string>
     <string name="driver_choose_operation">选择操作</string>
     <string name="driver_local_refuse">没有存储权限</string>
+    <string name="driver_media_unsupported">不支持的文件</string>
+    <string name="driver_photo_link_notice">提示</string>
+    <string name="driver_photo_link_content">提取图片中的链接信息</string>
+    <string name="driver_photo_link_download">下载</string>
+    <string name="driver_photo_link_copy">复制</string>
+    <string name="driver_photo_link_un_support">没有找到打开此链接的应用</string>
 
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">备份成功!</string>

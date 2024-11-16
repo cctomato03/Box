@@ -21,10 +21,7 @@ public class FilesAdapter  extends BaseQuickAdapter<DriveFolderFile, BaseViewHol
     @Override
     protected void convert(BaseViewHolder helper, DriveFolderFile item) {
         TextView itemName = helper.getView(R.id.nameText);
-        if(item.name == null && item.parentFolder == item)
-            itemName.setText(" . . ");
-        else
-            itemName.setText(item.name);
+        itemName.setText(item.name);
         ImageView imgItem = helper.getView(R.id.imgItem);
         TextView lastModified = helper.getView(R.id.descriptionText);
         lastModified.setVisibility(View.GONE);

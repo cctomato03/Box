@@ -9,6 +9,7 @@ import com.google.gson.JsonParser;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
@@ -16,17 +17,14 @@ import java.util.List;
 import java.util.Locale;
 
 public class DriveFolderFile {
-    public DriveFolderFile parentFolder;
     public String name;
     public int version = 0;
     public boolean isFile;
     public String fileType;
     private StorageDrive driveData;
     public Long lastModifiedDate;
-    public boolean isSelected;
-    public boolean isDelMode;
     public String fileUrl;
-    private String[] accessingPath = new String[0];
+    private String pathStr = "";
     private List<DriveFolderFile> children;
     private JsonObject config;
 
@@ -37,39 +35,22 @@ public class DriveFolderFile {
             this.config = JsonParser.parseString(driveData.configJson).getAsJsonObject();
     }
 
-    public DriveFolderFile(DriveFolderFile parent, String name, int version, boolean isFile, String fileType, Long lastModifiedDate) {
-        if(parent != null) {
-            LinkedList<String> path = new LinkedList<>();
-            DriveFolderFile currentParent = parent;
-            while(currentParent != null) {
-                path.add(0, currentParent.name);
-                currentParent = currentParent.parentFolder;
-            }
-            accessingPath = path.toArray(new String[path.size()]);
-        }
-        this.parentFolder = parent;
+    public DriveFolderFile(String name, int version, boolean isFile, String fileType, Long lastModifiedDate) {
         this.name = name;
         this.version = version;
         this.isFile = isFile;
         if(fileType != null)
             this.fileType = fileType.toUpperCase(Locale.ROOT);
         this.lastModifiedDate = lastModifiedDate;
+
     }
 
-    public String[] getAccessingPath() {
-        return Arrays.copyOf(accessingPath, accessingPath.length);
+    public String getPathStr() {
+        return this.pathStr;
     }
 
-    public void setAccessingPath(String[] accessingPath) {
-        this.accessingPath = accessingPath;
-    }
-
-    public String getAccessingPathStr() {
-        String path = "";
-        for (String pathItem : accessingPath) {
-            path += (pathItem + "/");
-        }
-        return path;
+    public void setPathStr(String pathStr) {
+        this.pathStr = pathStr;
     }
 
     public boolean isDrive() {

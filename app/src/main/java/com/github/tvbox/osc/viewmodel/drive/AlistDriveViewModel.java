@@ -60,13 +60,12 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
     @Override
     public String loadData(LoadDataCallback callback) {
         JsonObject config = currentDrive.getConfig();
-        if (currentDriveNote == null) {
-            currentDriveNote = new DriveFolderFile(null,
-                    config.has("initPath") ? config.get("initPath").getAsString() : "", 0, false, null, null);
+        if (currentDrive == null) {
+            currentDrive = new DriveFolderFile(config.has("initPath") ? config.get("initPath").getAsString() : "", 0, false, null, null);
         }
-        String targetPath = currentDriveNote.getAccessingPathStr() + currentDriveNote.name;
+        String targetPath = currentDrive.name;
 
-        if (currentDriveNote.getChildren() == null) {
+        if (currentDrive.getChildren() == null) {
             new Thread() {
                 public void run() {
                     String webLink = getUrl(config.get("url").getAsString());
@@ -115,7 +114,7 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                                                 if (fileObj.has("url") && !fileObj.get("url").getAsString().isEmpty())
                                                     fileUrl = fileObj.get("url").getAsString();
                                                 try {
-                                                    DriveFolderFile driveFile = new DriveFolderFile(currentDriveNote, fileName, currentDrive.version, isFile,
+                                                    DriveFolderFile driveFile = new DriveFolderFile(fileName, currentDrive.version, isFile,
                                                             isFile && extNameStartIndex >= 0 && extNameStartIndex < fileName.length() ?
                                                                     fileName.substring(extNameStartIndex + 1) : null,
                                                             dateFormat.parse(fileObj.get("updated_at").getAsString()).getTime());
@@ -128,12 +127,12 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                                             }
                                         }
                                         sortData(items);
-                                        DriveFolderFile backItem = new DriveFolderFile(null, null, 0, false, null, null);
-                                        backItem.parentFolder = backItem;
+                                        DriveFolderFile backItem = new DriveFolderFile(null, 0, false, null, null);
+//                                        backItem.parentFolder = backItem;
                                         items.add(0, backItem);
-                                        currentDriveNote.setChildren(items);
+                                        currentDrive.setChildren(items);
                                         if (callback != null)
-                                            callback.callback(currentDriveNote.getChildren(), false);
+                                            callback.callback(currentDrive.getChildren(), false);
                                     } catch (Exception ex) {
                                         if (callback != null)
                                             callback.fail("无法访问，请注意地址格式");
@@ -173,7 +172,7 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                                                 boolean isFile = !fileObj.get("is_dir").getAsBoolean();
 
                                                 try {
-                                                    DriveFolderFile driveFile = new DriveFolderFile(currentDriveNote, fileName, currentDrive.version, isFile,
+                                                    DriveFolderFile driveFile = new DriveFolderFile(fileName, currentDrive.version, isFile,
                                                             isFile && extNameStartIndex >= 0 && extNameStartIndex < fileName.length() ?
                                                                     fileName.substring(extNameStartIndex + 1) : null,
                                                             dateFormat.parse(fileObj.get("modified").getAsString()).getTime());
@@ -184,12 +183,12 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                                             }
                                         }
                                         sortData(items);
-                                        DriveFolderFile backItem = new DriveFolderFile(null, null, 0, false, null, null);
-                                        backItem.parentFolder = backItem;
+                                        DriveFolderFile backItem = new DriveFolderFile(null, 0, false, null, null);
+//                                        backItem.parentFolder = backItem;
                                         items.add(0, backItem);
-                                        currentDriveNote.setChildren(items);
+                                        currentDrive.setChildren(items);
                                         if (callback != null)
-                                            callback.callback(currentDriveNote.getChildren(), false);
+                                            callback.callback(currentDrive.getChildren(), false);
                                     } catch (Exception ex) {
                                         if (callback != null)
                                             callback.fail("无法访问，请注意地址格式");
@@ -204,9 +203,9 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
             }.start();
             return targetPath;
         } else {
-            sortData(currentDriveNote.getChildren());
+            sortData(currentDrive.getChildren());
             if (callback != null)
-                callback.callback(currentDriveNote.getChildren(), true);
+                callback.callback(currentDrive.getChildren(), true);
         }
         return targetPath;
     }
@@ -214,7 +213,7 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
     public void loadFile(DriveFolderFile targetFile, LoadFileCallback callback) {
         JsonObject config = currentDrive.getConfig();
         String webLink = getUrl(config.get("url").getAsString());
-        String targetPath = targetFile.getAccessingPathStr() + targetFile.name;
+        String targetPath = targetFile.name;
         try {
             if (callback != null) {
                 if (targetFile.fileUrl != null && !targetFile.fileUrl.isEmpty()) {

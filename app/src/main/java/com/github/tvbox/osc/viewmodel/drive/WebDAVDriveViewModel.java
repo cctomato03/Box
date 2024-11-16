@@ -3,6 +3,7 @@ package com.github.tvbox.osc.viewmodel.drive;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.bean.DriveFolderFile;
 import com.github.tvbox.osc.ui.activity.MainActivity;
+import com.github.tvbox.osc.util.StorageDriveType;
 import com.google.gson.JsonObject;
 import com.thegrizzlylabs.sardineandroid.DavResource;
 import com.thegrizzlylabs.sardineandroid.Sardine;
@@ -41,12 +42,7 @@ public class WebDAVDriveViewModel extends AbstractDriveViewModel {
     @Override
     public String loadData(LoadDataCallback callback) {
         JsonObject config = currentDrive.getConfig();
-        if (currentDriveNote == null) {
-            currentDriveNote = new DriveFolderFile(null,
-                    config.has("initPath") ? config.get("initPath").getAsString() : "", 0, false, null, null);
-        }
-        String targetPath = currentDriveNote.getAccessingPathStr() + currentDriveNote.name;
-        if (currentDriveNote.getChildren() == null) {
+        if (currentDrive.getChildren() == null) {
             new Thread() {
                 public void run() {
                     Sardine webDAV = getWebDAV();
@@ -56,7 +52,8 @@ public class WebDAVDriveViewModel extends AbstractDriveViewModel {
                     }
                     List<DavResource> files = null;
                     try {
-                        files = webDAV.list(config.get("url").getAsString() + targetPath);
+                        String url = config.get("url").getAsString()  + currentDrive.getPathStr();
+                        files = webDAV.list(url);
                     } catch (Exception ex) {
                         if (callback != null)
                             callback.fail(MainActivity.getRes().getString(R.string.webdav_connect_error));
@@ -68,29 +65,40 @@ public class WebDAVDriveViewModel extends AbstractDriveViewModel {
                         for (int index = 1; index < files.size(); index++) {
                             DavResource file = files.get(index);
                             int extNameStartIndex = file.getName().lastIndexOf(".");
-                            items.add(new DriveFolderFile(currentDriveNote, file.getName(), 0, !file.isDirectory(),
+                            DriveFolderFile driveFolderFile = new DriveFolderFile(file.getName(), 0, !file.isDirectory(),
                                     !file.isDirectory() && extNameStartIndex >= 0 && extNameStartIndex < file.getName().length() ?
                                             file.getName().substring(extNameStartIndex + 1) : null,
-                                    file.getModified().getTime()));
+                                    file.getModified().getTime());
+                            driveFolderFile.setConfig(config);
+                            driveFolderFile.setPathStr(currentDrive.getPathStr() + driveFolderFile.name + "/");
+                            driveFolderFile.setDriveData(currentDrive.getDriveData());
+
+                            if (driveFolderFile.isFile) {
+                                if (StorageDriveType.isImageType(driveFolderFile.fileType) || StorageDriveType.isVideoType(driveFolderFile.fileType)) {
+                                    items.add(driveFolderFile);
+                                }
+                            } else {
+                                items.add(driveFolderFile);
+                            }
                         }
                     }
                     sortData(items);
 //                    DriveFolderFile backItem = new DriveFolderFile(null, null, 0, false, null, null);
 //                    backItem.parentFolder = backItem;
 //                    items.add(0, backItem);
-                    currentDriveNote.setChildren(items);
+                    currentDrive.setChildren(items);
                     if (callback != null)
-                        callback.callback(currentDriveNote.getChildren(), false);
+                        callback.callback(currentDrive.getChildren(), false);
 
                 }
             }.start();
-            return targetPath;
+            return currentDrive.name;
         } else {
-            sortData(currentDriveNote.getChildren());
+            sortData(currentDrive.getChildren());
             if (callback != null)
-                callback.callback(currentDriveNote.getChildren(), true);
+                callback.callback(currentDrive.getChildren(), true);
         }
-        return targetPath;
+        return currentDrive.name;
     }
 
 }

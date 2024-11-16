@@ -13,7 +13,7 @@ import java.util.Locale;
 public abstract class AbstractDriveViewModel extends ViewModel {
 
     protected DriveFolderFile currentDrive = null;
-    protected DriveFolderFile currentDriveNote = null;
+//    protected DriveFolderFile currentDriveNote = null;
     protected int sortType = 0;
 
     public DriveFolderFile getCurrentDrive() {
@@ -24,13 +24,13 @@ public abstract class AbstractDriveViewModel extends ViewModel {
         this.currentDrive = currentDrive;
     }
 
-    public DriveFolderFile getCurrentDriveNote() {
-        return currentDriveNote;
-    }
-
-    public void setCurrentDriveNote(DriveFolderFile currentDriveNote) {
-        this.currentDriveNote = currentDriveNote;
-    }
+//    public DriveFolderFile getCurrentDriveNote() {
+//        return currentDriveNote;
+//    }
+//
+//    public void setCurrentDriveNote(DriveFolderFile currentDriveNote) {
+//        this.currentDriveNote = currentDriveNote;
+//    }
 
     public void setSortType(int sortType) {
         this.sortType = sortType;

@@ -181,13 +181,14 @@ public class DriversFragment extends Fragment {
         List<StorageDrive> storageDrives = RoomDataManger.getAllDrives();
 
         StorageDrive localStorage = new StorageDrive();
-//        localStorage.name = MainActivity.getRes().getString(R.string.bottom_local);
         localStorage.name = "/storage/emulated/0/";
         localStorage.type = StorageDriveType.TYPE.LOCAL.ordinal();
         localStorage.configJson = null;
 
         DriveFolderFile localDriver = new DriveFolderFile(localStorage);
         localDriver.setConfig(new JsonObject());
+        localDriver.name = MainActivity.getRes().getString(R.string.bottom_local);
+        localDriver.setPathStr("/storage/emulated/0/");
         drives.add(localDriver);
 
         for (StorageDrive storageDrive : storageDrives) {
@@ -263,7 +264,12 @@ public class DriversFragment extends Fragment {
 
         this.adapter.setOnItemClickListener((adapter, view, position) -> {
             DriveFolderFile selectedItem = ((DriveFolderFile) adapter.getItem(position));
-
+            if (selectedItem != null && selectedItem.getConfig() != null && selectedItem.getConfig().has("initPath")) {
+                String initPath = selectedItem.getConfig().get("initPath").getAsString();
+                if (!initPath.isEmpty()) {
+                    selectedItem.setPathStr(initPath + "/");
+                }
+            }
             Bundle bundle = new Bundle();
             bundle.putString("viewModel", GsonUtils.toJson(selectedItem));
 

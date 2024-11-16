@@ -124,6 +124,12 @@
     <string name="driver_delete_operation">Delete</string>
     <string name="driver_choose_operation">Select Operation</string>
     <string name="driver_local_refuse">No storage permission</string>
+    <string name="driver_media_unsupported">Media Unsupported</string>
+    <string name="driver_photo_link_notice">Notice</string>
+    <string name="driver_photo_link_content">Extract link information from images</string>
+    <string name="driver_photo_link_download">Download</string>
+    <string name="driver_photo_link_copy">Copy</string>
+    <string name="driver_photo_link_un_support">No Support Application</string>
 
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">Backup Success</string>

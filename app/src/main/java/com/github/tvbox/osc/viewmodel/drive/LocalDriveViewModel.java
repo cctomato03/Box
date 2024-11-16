@@ -1,6 +1,7 @@
 package com.github.tvbox.osc.viewmodel.drive;
 
 import com.github.tvbox.osc.bean.DriveFolderFile;
+import com.github.tvbox.osc.util.StorageDriveType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,34 +16,43 @@ public class LocalDriveViewModel extends AbstractDriveViewModel {
 
     @Override
     public String loadData(LoadDataCallback callback) {
-        if (currentDriveNote == null)
-            currentDriveNote = new DriveFolderFile(null, "", 0, false, null, null);
-        String path = currentDrive.name + currentDriveNote.getAccessingPathStr() + currentDriveNote.name;
-        if (currentDriveNote.getChildren() == null) {
-            File[] files = (new File(path)).listFiles();
+        if (currentDrive.getChildren() == null) {
+            File[] files = (new File(currentDrive.getPathStr())).listFiles();
             List<DriveFolderFile> items = new ArrayList<>();
             if (files != null) {
                 for (File file : files) {
                     int extNameStartIndex = file.getName().lastIndexOf(".");
-                    items.add(new DriveFolderFile(currentDriveNote, file.getName(), 0, file.isFile(),
+
+                    DriveFolderFile driveFolderFile = new DriveFolderFile(file.getName(), 0, file.isFile(),
                             file.isFile() && extNameStartIndex >= 0 && extNameStartIndex < file.getName().length() ?
                                     file.getName().substring(extNameStartIndex + 1) : null,
-                            file.lastModified()));
+                            file.lastModified());
+                    driveFolderFile.setConfig(currentDrive.getConfig());
+                    driveFolderFile.setPathStr(currentDrive.getPathStr() + driveFolderFile.name + "/");
+                    driveFolderFile.setDriveData(currentDrive.getDriveData());
+
+                    if (driveFolderFile.isFile) {
+                        if (StorageDriveType.isImageType(driveFolderFile.fileType) || StorageDriveType.isVideoType(driveFolderFile.fileType)) {
+                            items.add(driveFolderFile);
+                        }
+                    } else {
+                        items.add(driveFolderFile);
+                    }
                 }
             }
             sortData(items);
 //            DriveFolderFile backItem = new DriveFolderFile(null, null, 0, false, null, null);
 //            backItem.parentFolder = backItem;
 //            items.add(0, backItem);
-            currentDriveNote.setChildren(items);
+            currentDrive.setChildren(items);
             if (callback != null) {
-                callback.callback(currentDriveNote.getChildren(), false);
+                callback.callback(currentDrive.getChildren(), false);
             }
         } else {
-            sortData(currentDriveNote.getChildren());
-            callback.callback(currentDriveNote.getChildren(), true);
+            sortData(currentDrive.getChildren());
+            callback.callback(currentDrive.getChildren(), true);
         }
-        return path;
+        return currentDrive.name;
     }
 
 }
