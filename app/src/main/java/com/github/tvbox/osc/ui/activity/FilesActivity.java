@@ -251,7 +251,13 @@ public class FilesActivity extends AppCompatActivity {
                             } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
                                 imageInfo.setOriginUrl(subUrl(driveFolderFile.getPathStr()));
                             } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.ALISTWEB) {
-                                imageInfo.setOriginUrl(driveFolderFile.fileUrl);
+                                if (driveFolderFile.fileUrl != null && !driveFolderFile.fileUrl.isEmpty()) {
+                                    imageInfo.setOriginUrl(driveFolderFile.fileUrl);
+                                } else {
+                                    JsonObject config = viewModel.getCurrentDrive().getConfig();
+                                    String url = config.get("url").getAsString() + subUrl(driveFolderFile.getPathStr());
+                                    imageInfo.setOriginUrl(url);
+                                }
                             }
 
                             imageInfoList.add(imageInfo);

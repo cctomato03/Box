@@ -171,7 +171,6 @@ public class DriversFragment extends Fragment {
         TextInputEditText namespaceText = contentView.findViewById(R.id.alist_content_namespace);
         TextInputEditText addressText = contentView.findViewById(R.id.alist_content_address);
         TextInputEditText pathText = contentView.findViewById(R.id.alist_content_path);
-        TextInputEditText usernameText = contentView.findViewById(R.id.alist_content_username);
         TextInputEditText passwordText = contentView.findViewById(R.id.alist_content_password);
         if (drive != null) {
             namespaceText.setText(drive.name);
@@ -179,7 +178,6 @@ public class DriversFragment extends Fragment {
                 JsonObject config = JsonParser.parseString(drive.configJson).getAsJsonObject();
                 addressText.setText(config.get("url").getAsString());
                 pathText.setText(config.get("initPath").getAsString());
-                usernameText.setText(config.get("username").getAsString());
                 passwordText.setText(config.get("password").getAsString());
             } catch (Exception ignored) {
 
@@ -191,7 +189,6 @@ public class DriversFragment extends Fragment {
             String name = Objects.requireNonNull(namespaceText.getText()).toString();
             String url = Objects.requireNonNull(addressText.getText()).toString();
             String initPath = Objects.requireNonNull(pathText.getText()).toString();
-            String username = Objects.requireNonNull(usernameText.getText()).toString();
             String password = Objects.requireNonNull(passwordText.getText()).toString();
             if(name.isEmpty())
             {
@@ -212,7 +209,6 @@ public class DriversFragment extends Fragment {
             if(initPath.endsWith("/"))
                 initPath = initPath.substring(0, initPath.length() - 1);
             config.addProperty("initPath", initPath);
-            config.addProperty("username", username);
             config.addProperty("password", password);
             if(drive != null) {
                 drive.name = name;
