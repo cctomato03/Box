@@ -179,6 +179,17 @@ public class DriversFragment extends Fragment {
 
         drives = new ArrayList<>();
         List<StorageDrive> storageDrives = RoomDataManger.getAllDrives();
+
+        StorageDrive localStorage = new StorageDrive();
+//        localStorage.name = MainActivity.getRes().getString(R.string.bottom_local);
+        localStorage.name = "/storage/emulated/0/";
+        localStorage.type = StorageDriveType.TYPE.LOCAL.ordinal();
+        localStorage.configJson = null;
+
+        DriveFolderFile localDriver = new DriveFolderFile(localStorage);
+        localDriver.setConfig(new JsonObject());
+        drives.add(localDriver);
+
         for (StorageDrive storageDrive : storageDrives) {
             DriveFolderFile drive = new DriveFolderFile(storageDrive);
             drives.add(drive);
@@ -214,22 +225,6 @@ public class DriversFragment extends Fragment {
                                     }
                                 }
                             }).show();
-
-//                    localButton.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View view) {
-//                            bottomSheetDialog.dismiss();
-//                            if (Build.VERSION.SDK_INT >= 23) {
-//                                if (App.getInstance().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//                                    ActivityCompat.requestPermissions(requireActivity(),
-//                                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-//                                    return;
-//                                }
-//                            }
-//                            openFilePicker();
-//                        }
-//                    });
-//                    bottomSheetDialog.show();
                 }
                 return false;
             }

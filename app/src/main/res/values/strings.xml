@@ -104,7 +104,7 @@
 
     <string name="bottom_storage_type">Select Storage</string>
     <string name="bottom_webdav">WebDAV</string>
-    <string name="bottom_local">Local</string>
+    <string name="bottom_local">Local Storage</string>
     <string name="bottom_alist">Alist</string>
 
     <string name="webdav_namespace">NameSpace</string>
@@ -123,7 +123,7 @@
     <string name="driver_edit_operation">Edit</string>
     <string name="driver_delete_operation">Delete</string>
     <string name="driver_choose_operation">Select Operation</string>
-
+    <string name="driver_local_refuse">No storage permission</string>
 
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">Backup Success</string>

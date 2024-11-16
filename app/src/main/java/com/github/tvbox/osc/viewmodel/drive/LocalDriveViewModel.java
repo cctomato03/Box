@@ -31,9 +31,9 @@ public class LocalDriveViewModel extends AbstractDriveViewModel {
                 }
             }
             sortData(items);
-            DriveFolderFile backItem = new DriveFolderFile(null, null, 0, false, null, null);
-            backItem.parentFolder = backItem;
-            items.add(0, backItem);
+//            DriveFolderFile backItem = new DriveFolderFile(null, null, 0, false, null, null);
+//            backItem.parentFolder = backItem;
+//            items.add(0, backItem);
             currentDriveNote.setChildren(items);
             if (callback != null) {
                 callback.callback(currentDriveNote.getChildren(), false);

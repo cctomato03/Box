@@ -393,10 +393,32 @@ public class FilesActivity extends AppCompatActivity {
     private void initData() {
         this.drives = null;
         sortType = Hawk.get(HawkConfig.STORAGE_DRIVE_SORT, 0);
+
         loadDriveData();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        stopLoading();
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                loadDriveData();
+            } else {
+                Toast.makeText(FilesActivity.this, MainActivity.getRes().getString(R.string.driver_delete), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     private void loadDriveData() {
+        if (item.getDriveType() == StorageDriveType.TYPE.LOCAL) {
+            if (App.getInstance().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(FilesActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return;
+            }
+        }
+
         startLoading();
         viewModel.setSortType(sortType);
         String path = viewModel.loadData(new AbstractDriveViewModel.LoadDataCallback() {

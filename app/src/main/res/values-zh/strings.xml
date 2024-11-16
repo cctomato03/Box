@@ -104,7 +104,7 @@
 
     <string name="bottom_storage_type">请选择存盘类型</string>
     <string name="bottom_webdav">WebDAV</string>
-    <string name="bottom_local">本地</string>
+    <string name="bottom_local">本地存储</string>
     <string name="bottom_alist">Alist</string>
 
     <string name="webdav_namespace">空间名称</string>
@@ -123,6 +123,7 @@
     <string name="driver_edit_operation">编辑</string>
     <string name="driver_delete_operation">删除</string>
     <string name="driver_choose_operation">选择操作</string>
+    <string name="driver_local_refuse">没有存储权限</string>
 
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">备份成功!</string>
