@@ -114,6 +114,13 @@
     <string name="webdav_password">密码</string>
     <string name="webdav_connect_error">无法访问该WebDAV地址</string>
 
+    <string name="alist_namespace">空间名称</string>
+    <string name="alist_address">Alist地址</string>
+    <string name="alist_path">初始路径</string>
+    <string name="alist_username">用户名</string>
+    <string name="alist_password">密码</string>
+    <string name="alist_connect_error">无法访问该Alist地址</string>
+
     <string name="driver_sort_title">请选择列表排序方式</string>
     <string name="driver_sort_type_name_asc">按名字升序</string>
     <string name="driver_sort_type_name_desc">按名字降序</string>

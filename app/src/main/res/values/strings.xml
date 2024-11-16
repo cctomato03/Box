@@ -114,6 +114,13 @@
     <string name="webdav_password">Password</string>
     <string name="webdav_connect_error">Connect Error</string>
 
+    <string name="alist_namespace">NameSpace</string>
+    <string name="alist_address">Alist Address</string>
+    <string name="alist_path">Alist Path</string>
+    <string name="alist_username">UserName</string>
+    <string name="alist_password">Password</string>
+    <string name="alist_connect_error">Connect Error</string>
+
     <string name="driver_sort_title">Select Sort Type</string>
     <string name="driver_sort_type_name_asc">Ascending By Name</string>
     <string name="driver_sort_type_name_desc">Descending By Name</string>

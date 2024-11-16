@@ -161,15 +161,73 @@ public class DriversFragment extends Fragment {
     }
 
     private void openAlistDriveDialog(StorageDrive drive) {
-        AlistDriveDialog dialog = new AlistDriveDialog(requireContext(), drive);
-        EventBus.getDefault().register(dialog);
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                EventBus.getDefault().unregister(dialog);
+        MaterialAlertDialogBuilder alistBuilder = new MaterialAlertDialogBuilder(requireContext());
+        View contentView = getLayoutInflater().inflate(R.layout.alist_add, null);
+        alistBuilder.setTitle(R.string.bottom_alist)
+                .setView(contentView)
+                .setCancelable(false);
+        AlertDialog alertDialog = alistBuilder.show();
+
+        TextInputEditText namespaceText = contentView.findViewById(R.id.alist_content_namespace);
+        TextInputEditText addressText = contentView.findViewById(R.id.alist_content_address);
+        TextInputEditText pathText = contentView.findViewById(R.id.alist_content_path);
+        TextInputEditText usernameText = contentView.findViewById(R.id.alist_content_username);
+        TextInputEditText passwordText = contentView.findViewById(R.id.alist_content_password);
+        if (drive != null) {
+            namespaceText.setText(drive.name);
+            try {
+                JsonObject config = JsonParser.parseString(drive.configJson).getAsJsonObject();
+                addressText.setText(config.get("url").getAsString());
+                pathText.setText(config.get("initPath").getAsString());
+                usernameText.setText(config.get("username").getAsString());
+                passwordText.setText(config.get("password").getAsString());
+            } catch (Exception ignored) {
+
             }
+        }
+
+        Button confirmButton = contentView.findViewById(R.id.confirmButton);
+        confirmButton.setOnClickListener(view -> {
+            String name = Objects.requireNonNull(namespaceText.getText()).toString();
+            String url = Objects.requireNonNull(addressText.getText()).toString();
+            String initPath = Objects.requireNonNull(pathText.getText()).toString();
+            String username = Objects.requireNonNull(usernameText.getText()).toString();
+            String password = Objects.requireNonNull(passwordText.getText()).toString();
+            if(name.isEmpty())
+            {
+                Toast.makeText(requireContext(), "请赋予一个空间名称", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if(url.isEmpty())
+            {
+                Toast.makeText(requireContext(), "请务必填入WebDav地址", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if(!url.endsWith("/"))
+                url += "/";
+            JsonObject config = new JsonObject();
+            config.addProperty("url", url);
+            if(initPath.startsWith("/"))
+                initPath = initPath.substring(1);
+            if(initPath.endsWith("/"))
+                initPath = initPath.substring(0, initPath.length() - 1);
+            config.addProperty("initPath", initPath);
+            config.addProperty("username", username);
+            config.addProperty("password", password);
+            if(drive != null) {
+                drive.name = name;
+                drive.configJson = config.toString();
+                RoomDataManger.updateDriveRecord(drive);
+            } else {
+                RoomDataManger.insertDriveRecord(name, StorageDriveType.TYPE.ALISTWEB, config);
+            }
+            this.initData();
+            alertDialog.dismiss();
         });
-        dialog.show();
+        Button cancelButton = contentView.findViewById(R.id.cancelButton);
+        cancelButton.setOnClickListener(view -> {
+            alertDialog.dismiss();
+        });
     }
 
     private void initData() {

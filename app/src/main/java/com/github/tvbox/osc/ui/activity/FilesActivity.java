@@ -196,30 +196,9 @@ public class FilesActivity extends AppCompatActivity {
                         JsonObject config = currentDrive.getConfig();
                         playFile(config.get("url").getAsString() + subUrl(selectedItem.getPathStr()));
                     } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.ALISTWEB) {
-                        AlistDriveViewModel boxedViewModel = (AlistDriveViewModel) viewModel;
-
-                        boxedViewModel.loadFile(selectedItem, new AlistDriveViewModel.LoadFileCallback() {
-                            @Override
-                            public void callback(String fileUrl) {
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        playFile(fileUrl);
-                                    }
-                                });
-                            }
-
-                            @Override
-                            public void fail(String msg) {
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast toast = Toast.makeText(FilesActivity.this, msg, Toast.LENGTH_SHORT);
-                                        toast.show();
-                                    }
-                                });
-                            }
-                        });
+                        if (!selectedItem.fileUrl.isEmpty()) {
+                            playFile(selectedItem.fileUrl);
+                        }
                     }
                 } else if (StorageDriveType.isImageType(selectedItem.fileType)) {
                     DriveFolderFile currentDrive = viewModel.getCurrentDrive();
@@ -245,8 +224,9 @@ public class FilesActivity extends AppCompatActivity {
                                     imageInfo.setHeader(header);
                                 }
                             } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
-                                File file = new File(subUrl(driveFolderFile.getPathStr()));
                                 imageInfo.setOriginUrl(subUrl(driveFolderFile.getPathStr()));
+                            } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.ALISTWEB) {
+                                imageInfo.setOriginUrl(driveFolderFile.fileUrl);
                             }
 
                             imageInfoList.add(imageInfo);
@@ -276,8 +256,10 @@ public class FilesActivity extends AppCompatActivity {
                                     @Override
                                     public void onClick(Activity activity, View view, int position) {
                                         // 可以在此处执行您自己的下载逻辑、埋点统计等信息
-                                        File cacheFile = new File(imageInfoList.get(position).getOriginUrl());
-                                        if (currentDrive.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
+                                        File cacheFile;
+                                        if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
+                                            cacheFile = new File(imageInfoList.get(position).getOriginUrl());
+                                        } else {
                                             cacheFile = getGlideCacheFile(FilesActivity.this, imageInfoList.get(position).getOriginUrl());
                                         }
 
@@ -404,7 +386,7 @@ public class FilesActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 loadDriveData();
             } else {
-                Toast.makeText(FilesActivity.this, MainActivity.getRes().getString(R.string.driver_delete), Toast.LENGTH_SHORT).show();
+                Toast.makeText(FilesActivity.this, MainActivity.getRes().getString(R.string.driver_local_refuse), Toast.LENGTH_SHORT).show();
             }
         }
     }
