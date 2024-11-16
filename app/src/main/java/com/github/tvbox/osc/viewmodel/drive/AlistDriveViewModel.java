@@ -1,7 +1,10 @@
 package com.github.tvbox.osc.viewmodel.drive;
 
+import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.bean.DriveFolderFile;
+import com.github.tvbox.osc.ui.activity.MainActivity;
 import com.github.tvbox.osc.util.StorageDriveType;
+import com.github.tvbox.osc.util.StringUtils;
 import com.github.tvbox.osc.util.UA;
 import com.github.tvbox.osc.util.urlhttp.OkHttpUtil;
 import com.google.gson.JsonElement;
@@ -83,7 +86,7 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                             requestBody.put("path", currentDrive.getPathStr());
                             requestBody.put("password", currentDrive.getConfig().get("password").getAsString());
                             requestBody.put("page_num", 1);
-                            requestBody.put("page_size", 200);
+                            requestBody.put("page_size", 0);
                             request.upJson(requestBody);
                             setRequestHeader(request, webLink);
                             request.execute(new AbsCallback<String>() {
@@ -190,7 +193,13 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
 
                                                     if (driveFile.isFile) {
                                                         if (StorageDriveType.isImageType(driveFile.fileType) || StorageDriveType.isVideoType(driveFile.fileType)) {
-                                                            driveFile.fileUrl = webLink + "/p/" + driveFile.getPathStr() + "?sign=" + fileObj.get("sign").getAsString();
+                                                            if (fileObj.get("sign") != null && !fileObj.get("sign").getAsString().isEmpty()) {
+                                                                String fileUrl = webLink + "/p/" + driveFile.getPathStr();
+                                                                fileUrl = StringUtils.subUrl(fileUrl);
+                                                                String sign = fileObj.get("sign").getAsString();
+                                                                fileUrl += "?sign=" + sign;
+                                                                driveFile.fileUrl = fileUrl;
+                                                            }
                                                             items.add(driveFile);
                                                         }
                                                     } else {
@@ -210,13 +219,14 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                                             callback.callback(currentDrive.getChildren(), false);
                                     } catch (Exception ex) {
                                         if (callback != null)
-                                            callback.fail("无法访问，请注意地址格式");
+                                            callback.fail(MainActivity.getRes().getString(R.string.alist_connect_error));
                                     }
                                 }
                             });
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        if (callback != null)
+                            callback.fail(MainActivity.getRes().getString(R.string.alist_connect_error));
                     }
                 }
             }.start();
@@ -235,11 +245,8 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
             if (callback != null) {
                 PostRequest<String> request = OkGo.<String>post(webLink + "/api/fs/get").tag("drive");
                 JSONObject requestBody = new JSONObject();
-                requestBody.put("path", currentDrive.getPathStr());
-                requestBody.put("password", currentDrive.getConfig().get("password").getAsString());
-                requestBody.put("page", 1);
-                requestBody.put("per_page", 0);
-                requestBody.put("refresh", false);
+                requestBody.put("path", targetFile.getPathStr());
+                requestBody.put("password", targetFile.getConfig().get("password").getAsString());
 
                 request.upJson(requestBody);
                 setRequestHeader(request, webLink);
@@ -258,7 +265,6 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                             if (respData.get("code").getAsInt() == 200) {
                                 callback.callback(respData.get("data").getAsJsonObject().get("raw_url").getAsString());
                             }
-
                         } catch (Exception e) {
                             callback.fail(e.getMessage());
                         }
@@ -268,7 +274,6 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
         } catch (Exception e) {
             callback.fail(e.getMessage());
         }
-
     }
 
     public interface LoadFileCallback {

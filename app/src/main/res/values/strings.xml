@@ -121,6 +121,7 @@
     <string name="alist_password">Password</string>
     <string name="alist_connect_error">Connect Error</string>
 
+    <string name="driver_source_empty">No Source</string>
     <string name="driver_sort_title">Select Sort Type</string>
     <string name="driver_sort_type_name_asc">Ascending By Name</string>
     <string name="driver_sort_type_name_desc">Descending By Name</string>

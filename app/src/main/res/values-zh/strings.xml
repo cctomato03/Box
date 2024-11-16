@@ -121,6 +121,7 @@
     <string name="alist_password">密码</string>
     <string name="alist_connect_error">无法访问该Alist地址</string>
 
+    <string name="driver_source_empty">没有播放地址</string>
     <string name="driver_sort_title">请选择列表排序方式</string>
     <string name="driver_sort_type_name_asc">按名字升序</string>
     <string name="driver_sort_type_name_desc">按名字降序</string>

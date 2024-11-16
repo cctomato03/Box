@@ -34,6 +34,10 @@ public class StringUtils {
         return false;
     }
 
+    public static String subUrl(String path) {
+        return (path.endsWith("/") ? (path.substring(0, path.length() - 1)) : path);
+    }
+
     public static boolean isNotEmpty(Object obj) {
         return !isEmpty(obj);
     }

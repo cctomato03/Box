@@ -44,6 +44,7 @@ import com.github.tvbox.osc.bean.AbsSortXml;
 import com.github.tvbox.osc.bean.MovieSort;
 import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.databinding.FragmentHomeBinding;
+import com.github.tvbox.osc.ui.activity.FilesActivity;
 import com.github.tvbox.osc.ui.activity.HistoryActivity;
 import com.github.tvbox.osc.ui.activity.SearchActivity;
 import com.github.tvbox.osc.ui.adapter.SortAdapter;
@@ -128,6 +129,7 @@ public class HomeFragment extends Fragment {
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
+                                Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
                                 initData();
                             }
                         });
@@ -166,6 +168,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void error(String msg) {
                 stopLoading(false);
+                Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
                 if (msg.equalsIgnoreCase("-1")) {
                     mHandler.post(new Runnable() {
                         @Override

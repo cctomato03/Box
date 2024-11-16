@@ -1,5 +1,6 @@
 package com.github.tvbox.osc.ui.activity;
 
+import static com.github.tvbox.osc.util.StringUtils.subUrl;
 import static cc.shinichi.library.glide.ImageLoader.getGlideCacheFile;
 
 import android.Manifest;
@@ -140,10 +141,6 @@ public class FilesActivity extends AppCompatActivity {
         this.filesProgress.setIndeterminate(false);
     }
 
-    private String subUrl(String path) {
-        return (path.endsWith("/") ? (path.substring(0, path.length() - 1)) : path);
-    }
-
     private void initView() {
         this.mGridView = findViewById(R.id.mGridView);
         this.filesProgress = findViewById(R.id.files_progress);
@@ -196,8 +193,36 @@ public class FilesActivity extends AppCompatActivity {
                         JsonObject config = currentDrive.getConfig();
                         playFile(config.get("url").getAsString() + subUrl(selectedItem.getPathStr()));
                     } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.ALISTWEB) {
-                        if (!selectedItem.fileUrl.isEmpty()) {
+                        if (selectedItem.fileUrl != null && !selectedItem.fileUrl.isEmpty()) {
                             playFile(selectedItem.fileUrl);
+                        } else {
+                            AlistDriveViewModel boxedViewModel = (AlistDriveViewModel) viewModel;
+                            boxedViewModel.loadFile(selectedItem, new AlistDriveViewModel.LoadFileCallback() {
+                                @Override
+                                public void callback(String fileUrl) {
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (!fileUrl.isEmpty()) {
+                                                playFile(fileUrl);
+                                            } else {
+                                                Toast.makeText(FilesActivity.this, MainActivity.getRes().getString(R.string.driver_source_empty), Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void fail(String msg) {
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast toast = Toast.makeText(FilesActivity.this, msg, Toast.LENGTH_SHORT);
+                                            toast.show();
+                                        }
+                                    });
+                                }
+                            });
                         }
                     }
                 } else if (StorageDriveType.isImageType(selectedItem.fileType)) {
