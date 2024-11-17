@@ -1,5 +1,7 @@
 package com.github.tvbox.osc.bean;
 
+import android.graphics.Bitmap;
+
 import java.util.ArrayList;
 
 /**
@@ -23,6 +25,7 @@ public class LiveChannelItem {
     private ArrayList<String> channelUrls;
     public int sourceIndex = 0;
     public int sourceNum = 0;
+    public Bitmap channelPhoto;
     public boolean include_back = false;
 
     public void setinclude_back(boolean include_back) {

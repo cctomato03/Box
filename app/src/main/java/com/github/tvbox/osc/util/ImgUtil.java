@@ -1,5 +1,6 @@
 package com.github.tvbox.osc.util;
 
+import static com.blankj.utilcode.util.ViewUtils.runOnUiThread;
 import static com.bumptech.glide.load.resource.bitmap.VideoDecoder.FRAME_OPTION;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
@@ -15,6 +16,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.FitCenter;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
@@ -28,6 +30,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.HashMap;
+
+import wseemann.media.FFmpegMediaMetadataRetriever;
 
 public class ImgUtil {
 //    public static void load(String url, ImageView view) {
@@ -61,6 +66,30 @@ public class ImgUtil {
 //        }
 //    }
 
+    public static void loadLive(String url, ImageView view, int roundingRadius) {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    FFmpegMediaMetadataRetriever mmr = new FFmpegMediaMetadataRetriever();
+                    mmr.setDataSource(url);
+                    Bitmap bitmap = mmr.getFrameAtTime();
+                    mmr.release();
+                    if (bitmap != null) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                view.setImageBitmap(bitmap);
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+    }
+
     public static void load(String url, ImageView view, int roundingRadius) {
         view.setScaleType(ImageView.ScaleType.CENTER);
         if (TextUtils.isEmpty(url)) {
@@ -72,7 +101,7 @@ public class ImgUtil {
                 .diskCacheStrategy(getDiskCacheStrategy(4))
                 .dontAnimate()
                 .transform(
-            new CenterCrop(),
+            new FitCenter(),
             new RoundedCorners(roundingRadius));
             Glide.with(App.getInstance())
                 .asBitmap()

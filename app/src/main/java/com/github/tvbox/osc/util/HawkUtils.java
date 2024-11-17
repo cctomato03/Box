@@ -12,8 +12,6 @@ import com.orhanobut.hawk.Hawk;
 
 import java.util.List;
 
-import io.github.anilbeesetti.nextlib.media3ext.ffdecoder.NextRenderersFactory;
-
 public class HawkUtils {
 
     private static final String DANMU_OPEN = "danmu_open";
@@ -128,13 +126,14 @@ public class HawkUtils {
      */
     public static DefaultRenderersFactory createExoRendererActualValue(Context context) {
         int renderer = getExoRenderer();
-        switch (renderer) {
-            case 1:
-                return new NextRenderersFactory(context);
-            case 0:
-            default:
-                return new DefaultRenderersFactory(context);
-        }
+//        switch (renderer) {
+//            case 1:
+//                return new NextRenderersFactory(context);
+//            case 0:
+//            default:
+//                return new DefaultRenderersFactory(context);
+//        }
+        return new DefaultRenderersFactory(context);
     }
 
     /**

@@ -30,11 +30,16 @@ public class LivesAdapter  extends BaseQuickAdapter<LiveChannelItem, BaseViewHol
 
         ImageView ivThumb = helper.getView(R.id.ivThumb);
 
-        String[] epgInfo = EpgUtil.getEpgInfo(item.getChannelName());
         //由于部分电视机使用glide报错
-        if (epgInfo != null) {
-            // takagen99 : Use Glide instead
-            ImgUtil.load(epgInfo[0], ivThumb,  0);
+        if (item.channelPhoto != null) {
+            ivThumb.setImageBitmap(item.channelPhoto);
+        } else if (!StringUtils.isBlank(item.getChannelName())) {
+            String[] epgInfo = EpgUtil.getEpgInfo(item.getChannelName());
+            if (epgInfo != null) {
+                ImgUtil.load(epgInfo[0], ivThumb, 0);
+            } else {
+                ivThumb.setImageResource(R.drawable.img_loading_placeholder);
+            }
         } else {
             ivThumb.setImageResource(R.drawable.img_loading_placeholder);
         }

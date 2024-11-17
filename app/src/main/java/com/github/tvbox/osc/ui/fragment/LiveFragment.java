@@ -1,8 +1,9 @@
 package com.github.tvbox.osc.ui.fragment;
 
-import android.content.Context;
+import static com.lzy.okgo.utils.HttpUtils.runOnUiThread;
+
 import android.content.Intent;
-import android.graphics.Color;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,12 +12,10 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -29,14 +28,8 @@ import com.github.tvbox.osc.bean.LiveChannelGroup;
 import com.github.tvbox.osc.bean.LiveChannelItem;
 import com.github.tvbox.osc.databinding.FragmentLiveBinding;
 import com.github.tvbox.osc.event.RefreshEvent;
-import com.github.tvbox.osc.ui.activity.DetailActivity;
-import com.github.tvbox.osc.ui.activity.HistoryActivity;
 import com.github.tvbox.osc.ui.activity.LivePlayActivity;
-import com.github.tvbox.osc.ui.activity.MainActivity;
-import com.github.tvbox.osc.ui.activity.SearchActivity;
 import com.github.tvbox.osc.ui.adapter.LivesAdapter;
-import com.github.tvbox.osc.util.HawkConfig;
-import com.github.tvbox.osc.util.JavaUtil;
 import com.github.tvbox.osc.util.StringUtils;
 import com.github.tvbox.osc.util.live.TxtSubscribe;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -46,7 +39,6 @@ import com.google.gson.JsonArray;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.AbsCallback;
 import com.lzy.okgo.model.Response;
-import com.orhanobut.hawk.Hawk;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -55,6 +47,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import wseemann.media.FFmpegMediaMetadataRetriever;
 
 
 public class LiveFragment extends Fragment {
@@ -167,6 +161,33 @@ public class LiveFragment extends Fragment {
             public void onTabSelected(TabLayout.Tab tab) {
                 List<LiveChannelItem> channelItemList = liveChannelGroupList.get(tab.getPosition()).getLiveChannels();
                 livesAdapter.setNewData(channelItemList);
+                if (channelItemList != null && !channelItemList.isEmpty()) {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            for (int index = 0; index < channelItemList.size(); index++) {
+                                LiveChannelItem channelItem = channelItemList.get(index);
+                                List<String> channelUrls = channelItem.getChannelUrls();
+
+                                if (channelUrls != null && channelUrls.size() > channelItem.getSourceIndex()) {
+                                    try {
+                                        FFmpegMediaMetadataRetriever mmr = new FFmpegMediaMetadataRetriever();
+                                        String channelUrl = channelUrls.get(channelItem.getSourceIndex());
+                                        mmr.setDataSource(channelUrl);
+                                        Bitmap bitmap = mmr.getFrameAtTime();
+                                        mmr.release();
+                                        if (bitmap != null) {
+                                            channelItem.channelPhoto = bitmap;
+                                            livesAdapter.notifyItemChanged(index);
+                                        }
+                                    } catch (Exception ignored) {
+
+                                    }
+                                }
+                            }
+                        }
+                    }.start();
+                }
             }
 
             @Override
