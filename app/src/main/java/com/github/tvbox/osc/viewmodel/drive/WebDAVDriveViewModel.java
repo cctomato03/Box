@@ -78,7 +78,9 @@ public class WebDAVDriveViewModel extends AbstractDriveViewModel {
                                     items.add(driveFolderFile);
                                 }
                             } else {
-                                items.add(driveFolderFile);
+                                if (!driveFolderFile.name.startsWith(".")) {
+                                    items.add(driveFolderFile);
+                                }
                             }
                         }
                     }

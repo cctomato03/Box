@@ -19,9 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -203,10 +201,12 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                                                             items.add(driveFile);
                                                         }
                                                     } else {
-                                                        items.add(driveFile);
+                                                        if (!driveFile.name.startsWith(".")) {
+                                                            items.add(driveFile);
+                                                        }
                                                     }
-                                                } catch (ParseException e) {
-                                                    e.printStackTrace();
+                                                } catch (ParseException ignored) {
+
                                                 }
                                             }
                                         }
@@ -239,41 +239,24 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
         return currentDrive.name;
     }
 
-    public void loadFile(DriveFolderFile targetFile, LoadFileCallback callback) {
+    public String getFileAddress(DriveFolderFile targetFile) {
         String webLink = getUrl(targetFile.getConfig().get("url").getAsString());
         try {
-            if (callback != null) {
-                PostRequest<String> request = OkGo.<String>post(webLink + "/api/fs/get").tag("drive");
-                JSONObject requestBody = new JSONObject();
-                requestBody.put("path", targetFile.getPathStr());
-                requestBody.put("password", targetFile.getConfig().get("password").getAsString());
-
-                request.upJson(requestBody);
-                setRequestHeader(request, webLink);
-                request.execute(new AbsCallback<String>() {
-
-                    @Override
-                    public String convertResponse(okhttp3.Response response) throws Throwable {
-                        return response.body().string();
-                    }
-
-                    @Override
-                    public void onSuccess(Response<String> response) {
-                        String respBody = response.body();
-                        try {
-                            JsonObject respData = JsonParser.parseString(respBody).getAsJsonObject();
-                            if (respData.get("code").getAsInt() == 200) {
-                                callback.callback(respData.get("data").getAsJsonObject().get("raw_url").getAsString());
-                            }
-                        } catch (Exception e) {
-                            callback.fail(e.getMessage());
-                        }
-                    }
-                });
+            PostRequest<String> request = OkGo.<String>post(webLink + "/api/fs/get");
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("path", targetFile.getPathStr());
+            requestBody.put("password", targetFile.getConfig().get("password").getAsString());
+            request.upJson(requestBody);
+            setRequestHeader(request, webLink);
+            okhttp3.Response response = request.execute();
+            JsonObject respData = JsonParser.parseString(response.body().string()).getAsJsonObject();
+            if (respData.get("code").getAsInt() == 200) {
+                return respData.get("data").getAsJsonObject().get("raw_url").getAsString();
             }
         } catch (Exception e) {
-            callback.fail(e.getMessage());
+            return "";
         }
+        return "";
     }
 
     public interface LoadFileCallback {

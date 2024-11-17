@@ -175,6 +175,10 @@ public class FilesActivity extends AppCompatActivity {
         this.adapter.setOnItemClickListener((adapter, view, position) -> {
             DriveFolderFile selectedItem = ((DriveFolderFile) adapter.getItem(position));
 
+            if (selectedItem == null) {
+                return;
+            }
+
             if (!selectedItem.isFile) {
                 Bundle bundle = new Bundle();
                 String data = GsonUtils.toJson(selectedItem);
@@ -184,7 +188,6 @@ public class FilesActivity extends AppCompatActivity {
                 intent.putExtras(bundle);
                 startActivity(intent);
             } else {
-                // takagen99 - To only play media file
                 if (StorageDriveType.isVideoType(selectedItem.fileType)) {
                     DriveFolderFile currentDrive = viewModel.getCurrentDrive();
                     if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
@@ -196,14 +199,16 @@ public class FilesActivity extends AppCompatActivity {
                         if (selectedItem.fileUrl != null && !selectedItem.fileUrl.isEmpty()) {
                             playFile(selectedItem.fileUrl);
                         } else {
-                            AlistDriveViewModel boxedViewModel = (AlistDriveViewModel) viewModel;
-                            boxedViewModel.loadFile(selectedItem, new AlistDriveViewModel.LoadFileCallback() {
-                                @Override
-                                public void callback(String fileUrl) {
+                            startLoading();
+                            new Thread() {
+                                public void run() {
+                                    AlistDriveViewModel boxedViewModel = (AlistDriveViewModel) viewModel;
+                                    String fileUrl = boxedViewModel.getFileAddress(selectedItem);
                                     mHandler.post(new Runnable() {
                                         @Override
                                         public void run() {
-                                            if (!fileUrl.isEmpty()) {
+                                            stopLoading();
+                                            if (fileUrl != null && !fileUrl.isEmpty()) {
                                                 playFile(fileUrl);
                                             } else {
                                                 Toast.makeText(FilesActivity.this, MainActivity.getRes().getString(R.string.driver_source_empty), Toast.LENGTH_SHORT).show();
@@ -211,129 +216,148 @@ public class FilesActivity extends AppCompatActivity {
                                         }
                                     });
                                 }
-
-                                @Override
-                                public void fail(String msg) {
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast toast = Toast.makeText(FilesActivity.this, msg, Toast.LENGTH_SHORT);
-                                            toast.show();
-                                        }
-                                    });
-                                }
-                            });
+                            }.start();
                         }
                     }
                 } else if (StorageDriveType.isImageType(selectedItem.fileType)) {
                     DriveFolderFile currentDrive = viewModel.getCurrentDrive();
+                    startLoading();
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            List<ImageInfo> imageInfoList = new ArrayList<>();
+                            int imageIndex = 0;
+                            for (Object object : adapter.getData()) {
+                                DriveFolderFile driveFolderFile = (DriveFolderFile)object;
 
-                    List<ImageInfo> imageInfoList = new ArrayList<>();
-                    int imageIndex = 0;
-                    for (Object object : adapter.getData()) {
-                        DriveFolderFile driveFolderFile = (DriveFolderFile)object;
+                                if (StorageDriveType.isImageType(driveFolderFile.fileType)) {
+                                    ImageInfo imageInfo = new ImageInfo();
+                                    imageInfo.setName(driveFolderFile.name);
 
-                        if (StorageDriveType.isImageType(driveFolderFile.fileType)) {
-                            ImageInfo imageInfo = new ImageInfo();
-                            imageInfo.setName(driveFolderFile.name);
+                                    if (currentDrive.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
+                                        JsonObject config = viewModel.getCurrentDrive().getConfig();
+                                        String url = config.get("url").getAsString() + subUrl(driveFolderFile.getPathStr());
+                                        imageInfo.setOriginUrl(url);
 
-                            if (currentDrive.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
-                                JsonObject config = viewModel.getCurrentDrive().getConfig();
-                                String url = config.get("url").getAsString() + subUrl(driveFolderFile.getPathStr());
-                                imageInfo.setOriginUrl(url);
-
-                                String credentialStr = viewModel.getCurrentDrive().getWebDAVBase64Credential();
-                                if (credentialStr != null) {
-                                    HashMap<String, String> header = new HashMap<>();
-                                    header.put("authorization", "Basic " + credentialStr);
-                                    imageInfo.setHeader(header);
-                                }
-                            } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
-                                imageInfo.setOriginUrl(subUrl(driveFolderFile.getPathStr()));
-                            } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.ALISTWEB) {
-                                if (driveFolderFile.fileUrl != null && !driveFolderFile.fileUrl.isEmpty()) {
-                                    imageInfo.setOriginUrl(driveFolderFile.fileUrl);
-                                } else {
-                                    JsonObject config = viewModel.getCurrentDrive().getConfig();
-                                    String url = config.get("url").getAsString() + subUrl(driveFolderFile.getPathStr());
-                                    imageInfo.setOriginUrl(url);
-                                }
-                            }
-
-                            imageInfoList.add(imageInfo);
-                            if (driveFolderFile == selectedItem) {
-                                imageIndex = imageInfoList.size() - 1;
-                            }
-                        }
-                    }
-                    if (!imageInfoList.isEmpty()) {
-                        ImagePreview.getInstance()
-                                .setContext(FilesActivity.this)
-                                .setIndex(imageIndex)
-                                .setImageInfoList(imageInfoList)
-                                .setLoadStrategy(ImagePreview.LoadStrategy.AlwaysOrigin)
-                                .setLongPicDisplayMode(ImagePreview.LongPicDisplayMode.Default)
-                                .setFolderName("webdavImage")
-                                .setZoomTransitionDuration(300)
-                                .setShowErrorToast(true)
-                                .setEnableClickClose(false)
-                                .setBigImageLongClickListener(new OnBigImageLongClickListener() {
-                                    @Override
-                                    public boolean onLongClick(Activity activity, View view, int position) {
-                                        return true;
-                                    }
-                                })
-                                .setDownloadClickListener(new OnDownloadClickListener() {
-                                    @Override
-                                    public void onClick(Activity activity, View view, int position) {
-                                        // 可以在此处执行您自己的下载逻辑、埋点统计等信息
-                                        File cacheFile;
-                                        if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
-                                            cacheFile = new File(imageInfoList.get(position).getOriginUrl());
-                                        } else {
-                                            cacheFile = getGlideCacheFile(FilesActivity.this, imageInfoList.get(position).getOriginUrl());
+                                        String credentialStr = viewModel.getCurrentDrive().getWebDAVBase64Credential();
+                                        if (credentialStr != null) {
+                                            HashMap<String, String> header = new HashMap<>();
+                                            header.put("authorization", "Basic " + credentialStr);
+                                            imageInfo.setHeader(header);
                                         }
-
-                                        if (cacheFile != null && cacheFile.exists()) {
-                                            try {
-                                                ExifInterface exifInterface = new ExifInterface(new FileInputStream(cacheFile));
-                                                String downloadLink = exifInterface.getAttribute(androidx.exifinterface.media.ExifInterface.TAG_ARTIST);
-                                                if (downloadLink != null && !downloadLink.isEmpty()) {
-                                                    AlertDialog dialog = new AlertDialog.Builder(activity)
-                                                            .setTitle(MainActivity.getRes().getString(R.string.driver_photo_link_content))
-                                                            .setPositiveButton(MainActivity.getRes().getString(R.string.driver_photo_link_copy), (dialog1, which) -> {
-                                                                ClipboardManager clipboardManager =
-                                                                        (ClipboardManager) FilesActivity.this.getSystemService(Context.CLIPBOARD_SERVICE);
-                                                                clipboardManager.setPrimaryClip(ClipData.newPlainText("label", downloadLink));
-                                                            })
-                                                            .setNegativeButton(MainActivity.getRes().getString(R.string.driver_photo_link_download), (dialog1, which) -> {
-                                                                Intent openIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadLink));
-                                                                try {
-                                                                    startActivity(openIntent);
-                                                                } catch (
-                                                                        ActivityNotFoundException e) {
-                                                                    Toast.makeText(FilesActivity.this, MainActivity.getRes().getString(R.string.driver_photo_link_un_support), Toast.LENGTH_SHORT).show();
-                                                                }
-                                                            })
-                                                            .create();
-                                                    dialog.show();
+                                    } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
+                                        imageInfo.setOriginUrl(subUrl(driveFolderFile.getPathStr()));
+                                    } else if (currentDrive.getDriveType() == StorageDriveType.TYPE.ALISTWEB) {
+                                        if (driveFolderFile.fileUrl != null && !driveFolderFile.fileUrl.isEmpty()) {
+                                            imageInfo.setOriginUrl(driveFolderFile.fileUrl);
+                                        } else {
+                                            if (driveFolderFile == selectedItem) {
+                                                AlistDriveViewModel boxedViewModel = (AlistDriveViewModel) viewModel;
+                                                String fileUrl = boxedViewModel.getFileAddress(selectedItem);
+                                                if (fileUrl != null && !fileUrl.isEmpty()) {
+                                                    imageInfo.setOriginUrl(fileUrl);
+                                                    imageInfoList.clear();
+                                                    imageInfoList.add(imageInfo);
+                                                    imageIndex = 0;
+                                                    break;
+                                                } else {
+                                                    mHandler.post(new Runnable() {
+                                                      @Override
+                                                      public void run() {
+                                                          stopLoading();
+                                                          Toast.makeText(FilesActivity.this, MainActivity.getRes().getString(R.string.driver_source_empty), Toast.LENGTH_SHORT).show();
+                                                      }
+                                                    });
+                                                    return;
                                                 }
-                                            } catch (IOException e) {
-                                                throw new RuntimeException(e);
                                             }
-                                        } else {
-                                            Toast.makeText(FilesActivity.this, "图片还未下载", Toast.LENGTH_SHORT).show();
                                         }
                                     }
 
-                                    @Override
-                                    public boolean isInterceptDownload() {
-                                        // return true 时, 需要自己实现下载
-                                        // return false 时, 使用内置下载
-                                        return true;
+                                    imageInfoList.add(imageInfo);
+                                    if (driveFolderFile == selectedItem) {
+                                        imageIndex = imageInfoList.size() - 1;
                                     }
-                                }).start();
-                    }
+                                }
+                            }
+
+                            int finalImageIndex = imageIndex;
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    stopLoading();
+                                    if (!imageInfoList.isEmpty()) {
+                                        ImagePreview.getInstance()
+                                                .setContext(FilesActivity.this)
+                                                .setIndex(finalImageIndex)
+                                                .setImageInfoList(imageInfoList)
+                                                .setLoadStrategy(ImagePreview.LoadStrategy.AlwaysOrigin)
+                                                .setLongPicDisplayMode(ImagePreview.LongPicDisplayMode.Default)
+                                                .setFolderName("webdavImage")
+                                                .setZoomTransitionDuration(300)
+                                                .setShowErrorToast(true)
+                                                .setEnableClickClose(false)
+                                                .setBigImageLongClickListener(new OnBigImageLongClickListener() {
+                                                    @Override
+                                                    public boolean onLongClick(Activity activity, View view, int position) {
+                                                        return true;
+                                                    }
+                                                })
+                                                .setDownloadClickListener(new OnDownloadClickListener() {
+                                                    @Override
+                                                    public void onClick(Activity activity, View view, int position) {
+                                                        // 可以在此处执行您自己的下载逻辑、埋点统计等信息
+                                                        File cacheFile;
+                                                        if (currentDrive.getDriveType() == StorageDriveType.TYPE.LOCAL) {
+                                                            cacheFile = new File(imageInfoList.get(position).getOriginUrl());
+                                                        } else {
+                                                            cacheFile = getGlideCacheFile(FilesActivity.this, imageInfoList.get(position).getOriginUrl());
+                                                        }
+
+                                                        if (cacheFile != null && cacheFile.exists()) {
+                                                            try {
+                                                                ExifInterface exifInterface = new ExifInterface(new FileInputStream(cacheFile));
+                                                                String downloadLink = exifInterface.getAttribute(androidx.exifinterface.media.ExifInterface.TAG_ARTIST);
+                                                                if (downloadLink != null && !downloadLink.isEmpty()) {
+                                                                    AlertDialog dialog = new AlertDialog.Builder(activity)
+                                                                            .setTitle(MainActivity.getRes().getString(R.string.driver_photo_link_content))
+                                                                            .setPositiveButton(MainActivity.getRes().getString(R.string.driver_photo_link_copy), (dialog1, which) -> {
+                                                                                ClipboardManager clipboardManager =
+                                                                                        (ClipboardManager) FilesActivity.this.getSystemService(Context.CLIPBOARD_SERVICE);
+                                                                                clipboardManager.setPrimaryClip(ClipData.newPlainText("label", downloadLink));
+                                                                            })
+                                                                            .setNegativeButton(MainActivity.getRes().getString(R.string.driver_photo_link_download), (dialog1, which) -> {
+                                                                                Intent openIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadLink));
+                                                                                try {
+                                                                                    startActivity(openIntent);
+                                                                                } catch (
+                                                                                        ActivityNotFoundException e) {
+                                                                                    Toast.makeText(FilesActivity.this, MainActivity.getRes().getString(R.string.driver_photo_link_un_support), Toast.LENGTH_SHORT).show();
+                                                                                }
+                                                                            })
+                                                                            .create();
+                                                                    dialog.show();
+                                                                }
+                                                            } catch (IOException e) {
+                                                                throw new RuntimeException(e);
+                                                            }
+                                                        } else {
+                                                            Toast.makeText(FilesActivity.this, "图片还未下载", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public boolean isInterceptDownload() {
+                                                        // return true 时, 需要自己实现下载
+                                                        // return false 时, 使用内置下载
+                                                        return true;
+                                                    }
+                                                }).start();
+                                    }
+                                }
+                            });
+                        }
+                    }.start();
                 } else {
                     Toast.makeText(FilesActivity.this, R.string.driver_media_unsupported, Toast.LENGTH_SHORT).show();
                 }
