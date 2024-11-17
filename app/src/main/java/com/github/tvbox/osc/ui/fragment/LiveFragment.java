@@ -1,5 +1,6 @@
 package com.github.tvbox.osc.ui.fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -18,30 +19,43 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.bean.LiveChannelGroup;
+import com.github.tvbox.osc.bean.LiveChannelItem;
 import com.github.tvbox.osc.databinding.FragmentLiveBinding;
+import com.github.tvbox.osc.event.RefreshEvent;
+import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.ui.activity.HistoryActivity;
 import com.github.tvbox.osc.ui.activity.LivePlayActivity;
+import com.github.tvbox.osc.ui.activity.MainActivity;
 import com.github.tvbox.osc.ui.activity.SearchActivity;
+import com.github.tvbox.osc.ui.adapter.LivesAdapter;
+import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.JavaUtil;
 import com.github.tvbox.osc.util.StringUtils;
 import com.github.tvbox.osc.util.live.TxtSubscribe;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.tabs.TabLayout;
 import com.google.gson.JsonArray;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.AbsCallback;
 import com.lzy.okgo.model.Response;
+import com.orhanobut.hawk.Hawk;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import kotlin.Pair;
 
 public class LiveFragment extends Fragment {
     private FragmentLiveBinding binding;
@@ -49,17 +63,22 @@ public class LiveFragment extends Fragment {
     private CircularProgressIndicator liveProgress;
     private final List<LiveChannelGroup> liveChannelGroupList = new ArrayList<>();
     private MaterialToolbar toolbar;
+    private TabLayout tabLayout;
+    private RecyclerView mGridView;
+    private LivesAdapter livesAdapter;
 
     private void initLiveState() {
-        int lastChannelGroupIndex = -1;
-        int lastLiveChannelIndex = -1;
-
-        Pair<Integer, Integer> lastChannel = JavaUtil.findLiveLastChannel(liveChannelGroupList);
-        lastChannelGroupIndex = lastChannel.getFirst();
-        lastLiveChannelIndex = lastChannel.getSecond();
-
-//        liveChannelGroupAdapter.setNewData(liveChannelGroupList);
-//        selectChannelGroup(lastChannelGroupIndex, false, lastLiveChannelIndex);
+        if (liveChannelGroupList.isEmpty()) {
+            stopLoading(false);
+        } else {
+            stopLoading(true);
+            tabLayout.removeAllTabs();
+            for (int i = 0; i < liveChannelGroupList.size(); i++) {
+                LiveChannelGroup group = liveChannelGroupList.get(i);
+                tabLayout.addTab(tabLayout.newTab().setText(group.getGroupName()), i);
+            }
+            this.mGridView.requestLayout();
+        }
     }
 
     //加载列表
@@ -75,7 +94,6 @@ public class LiveFragment extends Fragment {
             Toast.makeText(App.getInstance(), getString(R.string.act_live_play_empty_channel), Toast.LENGTH_SHORT).show();
             return;
         }
-        startLoading();
         OkGo.<String>get(url).execute(new AbsCallback<String>() {
 
             @Override
@@ -85,7 +103,6 @@ public class LiveFragment extends Fragment {
 
             @Override
             public void onSuccess(Response<String> response) {
-                stopLoading();
                 JsonArray livesArray;
                 LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> linkedHashMap = new LinkedHashMap<>();
                 TxtSubscribe.parse(linkedHashMap, response.body());
@@ -111,29 +128,17 @@ public class LiveFragment extends Fragment {
             @Override
             public void onError(Response<String> response) {
                 super.onError(response);
-                stopLoading();
                 Toast.makeText(App.getInstance(), getString(R.string.act_live_play_network_error), Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    private void startLoading() {
-        this.liveProgress.setVisibility(View.VISIBLE);
-        this.liveProgress.setIndeterminate(true);
-    }
-
-    private void stopLoading() {
-        this.liveProgress.setVisibility(View.GONE);
-        this.liveProgress.setIndeterminate(false);
-    }
-
     private void initLiveChannelList() {
         List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
-        if (list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             Toast.makeText(App.getInstance(), getString(R.string.act_live_play_empty_channel), Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (list.size() == 1 && list.get(0).getGroupName().startsWith("http://127.0.0.1")) {
             loadProxyLives(list.get(0).getGroupName());
         } else {
@@ -141,6 +146,11 @@ public class LiveFragment extends Fragment {
             liveChannelGroupList.addAll(list);
             initLiveState();
         }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -151,6 +161,30 @@ public class LiveFragment extends Fragment {
 
         this.liveProgress = binding.liveProgress;
         this.toolbar = binding.livesTopBar;
+        this.tabLayout = binding.tabLayout;
+        this.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                List<LiveChannelItem> channelItemList = liveChannelGroupList.get(tab.getPosition()).getLiveChannels();
+                livesAdapter.setNewData(channelItemList);
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+        this.mGridView = binding.mGridView;
+        this.livesAdapter = new LivesAdapter();
+        mGridView.setAdapter(livesAdapter);
+        mGridView.setHasFixedSize(true);
+        mGridView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+
         this.toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -161,11 +195,35 @@ public class LiveFragment extends Fragment {
                 return false;
             }
         });
-        this.stopLoading();
-
-//        initLiveChannelList();
-
+        this.stopLoading(false);
+        EventBus.getDefault().register(this);
         return root;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void refresh(RefreshEvent event) {
+        if (event.type == RefreshEvent.TYPE_LIVEPLAY_UPDATE) {
+            initLiveChannelList();
+        }
+    }
+
+    private void startLoading() {
+        this.tabLayout.setVisibility(View.GONE);
+        this.mGridView.setVisibility(View.GONE);
+        this.liveProgress.setVisibility(View.VISIBLE);
+        this.liveProgress.setIndeterminate(true);
+    }
+
+    private void stopLoading(boolean success) {
+        this.liveProgress.setIndeterminate(false);
+        this.liveProgress.setVisibility(View.GONE);
+        if (success) {
+            this.tabLayout.setVisibility(View.VISIBLE);
+            this.mGridView.setVisibility(View.VISIBLE);
+        } else {
+            this.tabLayout.setVisibility(View.GONE);
+            this.mGridView.setVisibility(View.GONE);
+        }
     }
 
     @Override
