@@ -64,6 +64,11 @@ public class WebDAVDriveViewModel extends AbstractDriveViewModel {
                     if (files != null && files.size() > 1) {
                         for (int index = 1; index < files.size(); index++) {
                             DavResource file = files.get(index);
+
+                            if (file.getName().startsWith(".")) {
+                                continue;
+                            }
+
                             int extNameStartIndex = file.getName().lastIndexOf(".");
                             DriveFolderFile driveFolderFile = new DriveFolderFile(file.getName(), 0, !file.isDirectory(),
                                     !file.isDirectory() && extNameStartIndex >= 0 && extNameStartIndex < file.getName().length() ?
@@ -78,9 +83,7 @@ public class WebDAVDriveViewModel extends AbstractDriveViewModel {
                                     items.add(driveFolderFile);
                                 }
                             } else {
-                                if (!driveFolderFile.name.startsWith(".")) {
-                                    items.add(driveFolderFile);
-                                }
+                                items.add(driveFolderFile);
                             }
                         }
                     }

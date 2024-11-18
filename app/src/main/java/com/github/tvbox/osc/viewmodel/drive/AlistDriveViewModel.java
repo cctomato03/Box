@@ -180,6 +180,10 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                                                 int extNameStartIndex = fileName.lastIndexOf(".");
                                                 boolean isFile = !fileObj.get("is_dir").getAsBoolean();
 
+                                                if (fileName.startsWith(".")) {
+                                                    continue;
+                                                }
+
                                                 try {
                                                     DriveFolderFile driveFile = new DriveFolderFile(fileName, currentDrive.version, isFile,
                                                             isFile && extNameStartIndex >= 0 && extNameStartIndex < fileName.length() ?
@@ -201,10 +205,9 @@ public class AlistDriveViewModel extends AbstractDriveViewModel {
                                                             items.add(driveFile);
                                                         }
                                                     } else {
-                                                        if (!driveFile.name.startsWith(".")) {
-                                                            items.add(driveFile);
-                                                        }
+                                                        items.add(driveFile);
                                                     }
+
                                                 } catch (ParseException ignored) {
 
                                                 }

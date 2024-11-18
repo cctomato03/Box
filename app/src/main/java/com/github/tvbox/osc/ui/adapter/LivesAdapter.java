@@ -33,15 +33,14 @@ public class LivesAdapter  extends BaseQuickAdapter<LiveChannelItem, BaseViewHol
         //由于部分电视机使用glide报错
         if (item.channelPhoto != null) {
             ivThumb.setImageBitmap(item.channelPhoto);
-        } else if (!StringUtils.isBlank(item.getChannelName())) {
-            String[] epgInfo = EpgUtil.getEpgInfo(item.getChannelName());
-            if (epgInfo != null) {
-                ImgUtil.load(epgInfo[0], ivThumb, 0);
-            } else {
-                ivThumb.setImageResource(R.drawable.img_loading_placeholder);
-            }
-        } else {
+        }  else {
             ivThumb.setImageResource(R.drawable.img_loading_placeholder);
         }
+
+//        else if (!StringUtils.isBlank(item.getChannelName())) {
+////            String[] epgInfo = EpgUtil.getEpgInfo(item.getChannelName());
+//            String tvPhoto = "https://live.fanmingming.com/tv/" + item.getChannelName() + ".png";
+//            ImgUtil.load(tvPhoto, ivThumb, 0);
+//        }
     }
 }

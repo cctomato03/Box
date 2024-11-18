@@ -21,6 +21,10 @@ public class LocalDriveViewModel extends AbstractDriveViewModel {
             List<DriveFolderFile> items = new ArrayList<>();
             if (files != null) {
                 for (File file : files) {
+                    if (file.getName().startsWith(".")) {
+                        continue;
+                    }
+
                     int extNameStartIndex = file.getName().lastIndexOf(".");
 
                     DriveFolderFile driveFolderFile = new DriveFolderFile(file.getName(), 0, file.isFile(),
@@ -36,9 +40,7 @@ public class LocalDriveViewModel extends AbstractDriveViewModel {
                             items.add(driveFolderFile);
                         }
                     } else {
-                        if (!driveFolderFile.name.startsWith(".")) {
-                            items.add(driveFolderFile);
-                        }
+                        items.add(driveFolderFile);
                     }
                 }
             }

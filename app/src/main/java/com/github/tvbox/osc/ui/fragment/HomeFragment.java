@@ -105,7 +105,6 @@ public class HomeFragment extends Fragment {
 
         if (dataInitOk && jarInitOk) {
             sourceViewModel.getSort(ApiConfig.get().getHomeSourceBean().getKey());
-            EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_LIVEPLAY_UPDATE,true));
             return;
         }
         if (dataInitOk && !jarInitOk) {
@@ -165,6 +164,7 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void run() {
                         initData();
+                        EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_LIVEPLAY_UPDATE,true));
                     }
                 }, 50);
             }

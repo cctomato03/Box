@@ -1,7 +1,5 @@
 package com.github.tvbox.osc.ui.fragment;
 
-import static com.lzy.okgo.utils.HttpUtils.runOnUiThread;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -21,15 +19,18 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blankj.utilcode.util.GsonUtils;
+import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
-import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.bean.LiveChannelGroup;
 import com.github.tvbox.osc.bean.LiveChannelItem;
 import com.github.tvbox.osc.databinding.FragmentLiveBinding;
 import com.github.tvbox.osc.event.RefreshEvent;
+import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.ui.activity.LivePlayActivity;
 import com.github.tvbox.osc.ui.adapter.LivesAdapter;
+import com.github.tvbox.osc.ui.tv.widget.SearchKeyboard;
 import com.github.tvbox.osc.util.StringUtils;
 import com.github.tvbox.osc.util.live.TxtSubscribe;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -69,9 +70,8 @@ public class LiveFragment extends Fragment {
             tabLayout.removeAllTabs();
             for (int i = 0; i < liveChannelGroupList.size(); i++) {
                 LiveChannelGroup group = liveChannelGroupList.get(i);
-                tabLayout.addTab(tabLayout.newTab().setText(group.getGroupName()), i);
+                tabLayout.addTab(tabLayout.newTab().setText(group.getGroupName()));
             }
-            this.mGridView.requestLayout();
         }
     }
 
@@ -81,11 +81,11 @@ public class LiveFragment extends Fragment {
             Uri parsedUrl = Uri.parse(url);
             url = new String(Base64.decode(parsedUrl.getQueryParameter("ext"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
             if (StringUtils.isEmpty(url)) {
-                Toast.makeText(App.getInstance(), getString(R.string.act_live_play_empty_live_url), Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), getString(R.string.act_live_play_empty_live_url), Toast.LENGTH_LONG).show();
                 return;
             }
         } catch (Throwable th) {
-            Toast.makeText(App.getInstance(), getString(R.string.act_live_play_empty_channel), Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.act_live_play_empty_channel), Toast.LENGTH_SHORT).show();
             return;
         }
         OkGo.<String>get(url).execute(new AbsCallback<String>() {
@@ -105,7 +105,7 @@ public class LiveFragment extends Fragment {
                 ApiConfig.get().loadLives(livesArray);
                 List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
                 if (list.isEmpty()) {
-                    Toast.makeText(App.getInstance(), getString(R.string.act_live_play_empty_channel), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), getString(R.string.act_live_play_empty_channel), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 liveChannelGroupList.clear();
@@ -122,7 +122,7 @@ public class LiveFragment extends Fragment {
             @Override
             public void onError(Response<String> response) {
                 super.onError(response);
-                Toast.makeText(App.getInstance(), getString(R.string.act_live_play_network_error), Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), getString(R.string.act_live_play_network_error), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -130,7 +130,7 @@ public class LiveFragment extends Fragment {
     private void initLiveChannelList() {
         List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
         if (list == null || list.isEmpty()) {
-            Toast.makeText(App.getInstance(), getString(R.string.act_live_play_empty_channel), Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.act_live_play_empty_channel), Toast.LENGTH_SHORT).show();
             return;
         }
         if (list.size() == 1 && list.get(0).getGroupName().startsWith("http://127.0.0.1")) {
@@ -145,6 +145,8 @@ public class LiveFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        EventBus.getDefault().register(this);
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -161,15 +163,17 @@ public class LiveFragment extends Fragment {
             public void onTabSelected(TabLayout.Tab tab) {
                 List<LiveChannelItem> channelItemList = liveChannelGroupList.get(tab.getPosition()).getLiveChannels();
                 livesAdapter.setNewData(channelItemList);
+                mGridView.smoothScrollToPosition(0);
                 if (channelItemList != null && !channelItemList.isEmpty()) {
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            for (int index = 0; index < channelItemList.size(); index++) {
-                                LiveChannelItem channelItem = channelItemList.get(index);
-                                List<String> channelUrls = channelItem.getChannelUrls();
+                    for (int index = 0; index < channelItemList.size(); index++) {
+                        LiveChannelItem channelItem = channelItemList.get(index);
+                        List<String> channelUrls = channelItem.getChannelUrls();
 
-                                if (channelUrls != null && channelUrls.size() > channelItem.getSourceIndex()) {
+                        if (channelUrls != null && channelUrls.size() > channelItem.getSourceIndex()) {
+                            int finalIndex = index;
+                            new Thread() {
+                                @Override
+                                public void run() {
                                     try {
                                         FFmpegMediaMetadataRetriever mmr = new FFmpegMediaMetadataRetriever();
                                         String channelUrl = channelUrls.get(channelItem.getSourceIndex());
@@ -178,15 +182,15 @@ public class LiveFragment extends Fragment {
                                         mmr.release();
                                         if (bitmap != null) {
                                             channelItem.channelPhoto = bitmap;
-                                            livesAdapter.notifyItemChanged(index);
+                                            livesAdapter.notifyItemChanged(finalIndex);
                                         }
-                                    } catch (Exception ignored) {
-
+                                    } catch (Exception | Error ignored) {
                                     }
                                 }
-                            }
+                            }.start();
+
                         }
-                    }.start();
+                    }
                 }
             }
 
@@ -206,6 +210,21 @@ public class LiveFragment extends Fragment {
         mGridView.setHasFixedSize(true);
         mGridView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
+        this.livesAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                LiveChannelItem liveChannelItem = (LiveChannelItem)adapter.getItem(position);
+
+                if (liveChannelItem != null && liveChannelItem.getChannelUrls() != null && !liveChannelItem.getChannelUrls().isEmpty()) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("channelInfo", GsonUtils.toJson(liveChannelItem));
+                    Intent intent = new Intent(requireContext(), LivePlayActivity.class);
+                    intent.putExtras(bundle);
+                    startActivity(intent);
+                }
+            }
+        });
+
         this.toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -217,7 +236,6 @@ public class LiveFragment extends Fragment {
             }
         });
         this.stopLoading(false);
-        EventBus.getDefault().register(this);
         return root;
     }
 

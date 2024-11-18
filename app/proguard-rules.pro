@@ -202,6 +202,10 @@
 -keep class jcifs.** { *; }
 -dontwarn jcifs.**
 
+# FFmpegMediaMetadataRetriever
+-keep class wseemann.media.** { *; }
+-dontwarn wseemann.media.**
+
 # 实体类
 #-keep class com.github.tvbox.osc.bean.** { *; }
 -keep class com.github.tvbox.osc.ui.fragment.homes.**{*;}
